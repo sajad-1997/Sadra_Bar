@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>فرم بارنامه کامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>فرم ثبت اطلاعات بارنامه</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="section">
+            <h3>فرستنده</h3>
+            {{ sender_form.as_p }}
+        </div>
+        <div class="section">
+            <h3>گیرنده</h3>
+            {{ receiver_form.as_p }}
+        </div>
+        <div class="section">
+            <h3>راننده</h3>
+            {{ driver_form.as_p }}
+        </div>
+        <div class="section">
+            <h3>خودرو</h3>
+            {{ vehicle_form.as_p }}
+        </div>
+        <div class="section">
+            <h3>بارنامه</h3>
+            {{ shipment_form.as_p }}
+        </div>
+        <div style="text-align: center;">
+            <button type="submit">ثبت</button>
+        </div>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        $('.persian-date-picker').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: false
+        });
+    });
+</script>
+</body>
+</html>

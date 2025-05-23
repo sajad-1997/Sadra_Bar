@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: #a0a0a0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .stamp {
+            text-align: center;
+            margin-top: 30px;
+            border: 2px solid red;
+            padding: 10px;
+            /*display: inline-block;*/
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="stamp">
+        <h2>سازمان راهداری و حمل و نقل جاده ای</h2>
+        <h3>مؤسسه حمل و نقل صدرا بار خراسان</h3>
+    </div>
+    <div>
+        <ul>
+            <li><a href="{% url 'home' %}">صفحه اصلی</a></li>
+            <li><a href="{% url 'barnameh' %}">صدور بار نامه</a></li>
+        </ul>
+    </div>
+</div>
+
+
+{% block content %}
+
+{% endblock content %}
+
+</body>
+</html>
