@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import SenderForm, ReceiverForm, DriverForm, VehicleForm, ShipmentForm
+from .forms import SenderForm, ReceiverForm, DriverForm, VehicleForm, BijakForm
 
 
 def create_all_forms(request):
@@ -8,7 +8,7 @@ def create_all_forms(request):
         receiver_form = ReceiverForm(request.POST, prefix='receiver')
         driver_form = DriverForm(request.POST, prefix='driver')
         vehicle_form = VehicleForm(request.POST, prefix='vehicle')
-        shipment_form = ShipmentForm(request.POST, prefix='shipment')
+        shipment_form = BijakForm(request.POST, prefix='shipment')
 
         if all([sender_form.is_valid(), receiver_form.is_valid(), driver_form.is_valid(), vehicle_form.is_valid(),
                 shipment_form.is_valid()]):
@@ -31,7 +31,7 @@ def create_all_forms(request):
         receiver_form = ReceiverForm(prefix='receiver')
         driver_form = DriverForm(prefix='driver')
         vehicle_form = VehicleForm(prefix='vehicle')
-        shipment_form = ShipmentForm(prefix='shipment')
+        shipment_form = BijakForm(prefix='shipment')
 
     return render(request, 'full_form.html', {
         'sender_form': sender_form,

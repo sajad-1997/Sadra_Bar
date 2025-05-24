@@ -2,11 +2,14 @@ from django.db import models
 
 
 class Sender(models.Model):
-    name = models.TextField()
+    name = models.CharField(max_length=20)
     national_id = models.CharField(max_length=50, unique=True, )
     postal = models.CharField(max_length=10, )
     phone = models.CharField(max_length=11)
     address = models.TextField()
+
+    def __str__(self):
+        return self.name
 
 
 class Receiver(models.Model):
@@ -15,6 +18,9 @@ class Receiver(models.Model):
     postal = models.CharField(max_length=10, )
     phone = models.CharField(max_length=11)
     address = models.TextField()
+
+    def __str__(self):
+        return self.name
 
 
 class Driver(models.Model):
@@ -28,6 +34,9 @@ class Driver(models.Model):
     address = models.TextField()
     certificate = models.CharField(max_length=50, unique=True, )
 
+    def __str__(self):
+        return self.name
+
 
 class Vehicle(models.Model):
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
@@ -38,7 +47,7 @@ class Vehicle(models.Model):
     license_plate_series = models.CharField(max_length=2)
 
 
-class BijakForm(models.Model):
+class Bijak(models.Model):
     tracking_code = models.CharField(max_length=10)
     date = models.DateTimeField()
     value = models.CharField(max_length=100)
