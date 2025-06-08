@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Sender, Receiver, Driver, Vehicle, BijakForm
+import django_jalali.admin as jadmin
 
 
 class SenderAdmin(admin.ModelAdmin):
@@ -19,7 +20,7 @@ class VehicleAdmin(admin.ModelAdmin):
 
 
 class BijakAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('issuance_date',)
 
 
 admin.site.register(Sender, SenderAdmin)

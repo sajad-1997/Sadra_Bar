@@ -18,14 +18,17 @@ body {
 }
 
 header {
-    background: #0d47a1;
+    background: #3f4d61;
     color: #fff;
-    padding: 40px 0;
+    padding: 35px 0 70px 10px;
+    border-radius: 20px;
+    margin: 10px;
 }
 
 header h1 {
     float: right;
     margin-right: 20px;
+    margin-left: 20px;
 }
 
 nav ul {
@@ -116,6 +119,9 @@ form button {
     color: #fff;
     border: none;
     cursor: pointer;
+    margin: 10px;
+    width: 100px;
+
 }
 
 footer {
@@ -138,6 +144,66 @@ footer {
     }
 
     nav ul {
-        margin: 20px 0px;
+        margin: 20px 0;
     }
+}
+
+
+body {
+    font-family: 'Vazirmatn', sans-serif;
+    background: #d1d1d1;
+    margin: 0;
+    padding: 0;
+}
+
+.stamp {
+    text-align: center;
+    margin-top: 30px;
+    border: 2px solid red;
+    padding: 10px;
+    /*display: inline-block;*/
+    color: red;
+    font-weight: bold;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    max-width: 900px;
+    margin: auto;
+    border-radius: 10px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h3 {
+    text-align: center;
+}
+
+.section {
+    margin-bottom: 30px;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input, select {
+    width: 95%;
+    padding: 8px;
+    margin: 5px;
+}
+
+button {
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    cursor: pointer;
 }

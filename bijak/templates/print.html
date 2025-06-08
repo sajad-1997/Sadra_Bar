@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>چاپ بارنامه</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
+
+        .page {
+            width: 1123px;
+            height: 1536px;
+            background-image: url('{% static "images/IMG_2902.jpg" %}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center top;
+            position: relative;
+            direction: rtl;
+            font-family: sans-serif;
+        }
+
+        .field {
+            position: absolute;
+            font-size: 15px;
+            color: #000;
+            white-space: nowrap;
+        }
+
+        .tracking_code {
+            top: 36px;
+            right: 70px;
+        }
+
+        .date {
+            top: 36px;
+            right: 250px;
+        }
+
+        .sender_name {
+            top: 95px;
+            right: 670px;
+        }
+
+        .sender_national {
+            top: 95px;
+            right: 410px;
+        }
+
+        .sender_address {
+            top: 135px;
+            right: 670px;
+        }
+
+        .receiver_name {
+            top: 95px;
+            right: 160px;
+        }
+
+        .receiver_national {
+            top: 95px;
+            right: 10px;
+        }
+
+        .receiver_address {
+            top: 135px;
+            right: 160px;
+        }
+
+        .driver_name {
+            top: 190px;
+            right: 670px;
+        }
+
+        .driver_national {
+            top: 190px;
+            right: 410px;
+        }
+
+        .driver_birth {
+            top: 190px;
+            right: 160px;
+        }
+
+        .driver_license {
+            top: 230px;
+            right: 670px;
+        }
+
+        .license_issue {
+            top: 230px;
+            right: 410px;
+        }
+
+        .driver_phone {
+            top: 230px;
+            right: 160px;
+        }
+
+        .driver_address {
+            top: 270px;
+            right: 670px;
+        }
+
+        .home_phone {
+            top: 270px;
+            right: 160px;
+        }
+
+        .vehicle_plate {
+            top: 310px;
+            right: 670px;
+        }
+
+        .vehicle_type {
+            top: 310px;
+            right: 410px;
+        }
+
+        .fare {
+            top: 1380px;
+            right: 150px;
+        }
+
+        .stamp {
+            top: 1450px;
+            right: 580px;
+            color: red;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        @media print {
+            button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="field tracking_code">{{ shipment.tracking_code }}</div>
+    <div class="field date">{{ shipment.date }}</div>
+
+    <div class="field sender_name">{{ shipment.sender.name }}</div>
+    <div class="field sender_national">{{ shipment.sender.national_id }}</div>
+    <div class="field sender_address">{{ shipment.sender.address }}</div>
+
+    <div class="field receiver_name">{{ shipment.receiver.name }}</div>
+    <div class="field receiver_national">{{ shipment.receiver.national_id }}</div>
+    <div class="field receiver_address">{{ shipment.receiver.address }}</div>
+
+    <div class="field driver_name">{{ shipment.driver.name }}</div>
+    <div class="field driver_national">{{ shipment.driver.national_id }}</div>
+    <div class="field driver_birth">{{ shipment.driver.birth_date }}</div>
+    <div class="field driver_license">{{ shipment.driver.license_number }}</div>
+    <div class="field license_issue">{{ shipment.driver.license_issue_date }}</div>
+    <div class="field driver_phone">{{ shipment.driver.mobile_number }}</div>
+    <div class="field driver_address">{{ shipment.driver.home_address }}</div>
+    <div class="field home_phone">{{ shipment.driver.home_phone }}</div>
+
+    <div class="field vehicle_plate">{{ shipment.vehicle.license_plate }}</div>
+    <div class="field vehicle_type"></div>
+
+    <div class="field fare">{{ shipment.fare }} تومان</div>
+    <div class="field stamp">صدرا بار خراسان</div>
+</div>
+<div style="text-align: center; margin-top: 20px;">
+    <button onclick="window.print()">چاپ بارنامه</button>
+</div>
+</body>
+</html>

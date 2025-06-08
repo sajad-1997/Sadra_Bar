@@ -1,38 +1,40 @@
 from django.db import models
+import django_jalali.db.models as jmodels
 
 
 class Sender(models.Model):
-    name = models.CharField(max_length=20)
-    national_id = models.CharField(max_length=50, unique=True, )
-    postal = models.CharField(max_length=10)
-    phone = models.CharField(max_length=11)
-    address = models.TextField()
+    name = models.CharField(max_length=20, verbose_name="نام و نام خانوادگی فرستنده")
+    national_id = models.CharField(max_length=50, unique=True, verbose_name="شناسه یا کد ملی")
+    postal = models.CharField(max_length=10, verbose_name="کد پستی")
+    phone = models.CharField(max_length=11, verbose_name="تلفن")
+    address = models.TextField(verbose_name="آدرس")
 
     def __str__(self):
         return self.name
 
 
 class Receiver(models.Model):
-    name = models.CharField(max_length=20)
-    national_id = models.CharField(max_length=50, unique=True, )
-    postal = models.CharField(max_length=10, )
-    phone = models.CharField(max_length=11)
-    address = models.TextField()
+    name = models.CharField(max_length=20, verbose_name="نام و نام خانوادگی گیرنده")
+    national_id = models.CharField(max_length=50, unique=True, verbose_name="شناسه یا کد ملی")
+    postal = models.CharField(max_length=10, verbose_name="کد پستی")
+    phone = models.CharField(max_length=11, verbose_name="تلفن")
+    address = models.TextField(verbose_name="آدرس")
 
     def __str__(self):
         return self.name
 
 
 class Driver(models.Model):
-    name = models.CharField(max_length=20)
-    national_id = models.CharField(max_length=50, unique=True, )
-    brith_place = models.CharField(max_length=10)
-    father_name = models.CharField(max_length=10)
-    birth_date = models.DateField()
-    phone = models.CharField(max_length=11)
-    phone2 = models.CharField(max_length=11)
-    address = models.TextField()
-    certificate = models.CharField(max_length=50, unique=True, )
+    name = models.CharField(max_length=20, verbose_name="نام و نام خانوادگی راننده")
+    national_id = models.CharField(max_length=50, unique=True, verbose_name="کد ملی راننده")
+    brith_place = models.CharField(max_length=10, verbose_name="محل تولد")
+    father_name = models.CharField(max_length=10, verbose_name="نام پدر")
+    birth_date = models.DateField(verbose_name="تاریخ تولد")
+    phone = models.CharField(max_length=11, verbose_name="شماره تلفن راننده")
+    phone2 = models.CharField(max_length=11, verbose_name="شماره تلفن دوم")
+    address = models.TextField(verbose_name="آدرس محل سکونت")
+    certificate = models.CharField(max_length=50, unique=True, verbose_name="شماره گواهینامه")
+    certificate_date = models.DateField(verbose_name="تاریخ صدور گواهینامه")
 
     def __str__(self):
         return self.name
@@ -40,18 +42,38 @@ class Driver(models.Model):
 
 class Vehicle(models.Model):
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
-    type = models.CharField(max_length=10)
-    license_plate_three_digit = models.IntegerField(max_length=3)
-    license_plate_alphabet = models.CharField(max_length=1)
-    license_plate_two_digit = models.IntegerField(max_length=2)
-    license_plate_series = models.CharField(max_length=2)
+    type = models.CharField(max_length=10, verbose_name="نوع وسیله")
+    license_plate_three_digit = models.IntegerField(max_length=3, verbose_name="سه رقم پلاک")
+    license_plate_alphabet = models.CharField(max_length=1, verbose_name="الفبای پلاک")
+    license_plate_two_digit = models.IntegerField(max_length=2, verbose_name="دو رقم پلاک")
+    license_plate_series = models.CharField(max_length=2, verbose_name="سری پلاک")
+
+    def __str__(self):
+        return self.type
+
+
+class Cargo(models.Model):
+    name = models.CharField(max_length=50, verbose_name="نام محموله")
+    weight = models.IntegerField(max_length=5, verbose_name="وزن(کیلوگرم)/حجم(لیتر)")
+    package_type = models.CharField(max_length=10, verbose_name="نوع بسته بندی")
+    number_of_packaging = models.IntegerField(max_length=3, verbose_name="تعداد بسته بندی")
+
+    def __str__(self):
+        return self.name
 
 
 class BijakForm(models.Model):
-    tracking_code = models.CharField(max_length=10)
-    date = models.DateTimeField()
-    value = models.CharField(max_length=100)
+    tracking_code = models.CharField(max_length=10, verbose_name="کد رهگیری")
+    issuance_date = jmodels.jDateField(verbose_name="تاریخ صدور")
+    value = models.CharField(max_length=100, verbose_name="ارزش محموله")
+    origin = models.CharField(max_length=50, verbose_name="مبدا بارگیری")
+    destination = models.CharField(max_length=50, verbose_name="مقصد تخلیه")
+    insurance = models.CharField(max_length=100, verbose_name="مبلغ بیمه")
+    loading_fee = models.CharField(max_length=10, verbose_name="هزینه خدمات")
     sender = models.ForeignKey(Sender, on_delete=models.CASCADE)
     receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE)
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.issuance_date

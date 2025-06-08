@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'homePage',
     'bijak',
+    'django_jalali',
 ]
 
 MIDDLEWARE = [

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Sender, Receiver, Driver, Vehicle, BijakForm
+from .models import Sender, Receiver, Driver, Vehicle, Cargo, BijakForm
 
 
 class SenderForm(forms.ModelForm):
@@ -30,10 +30,16 @@ class VehicleForm(forms.ModelForm):
         fields = '__all__'
 
 
+class CargoForm(forms.ModelForm):
+    class Meta:
+        model = Cargo
+        fields = '__all__'
+
+
 class BijakForm(forms.ModelForm):
     class Meta:
         model = BijakForm
-        fields = ['tracking_code', 'date']
+        fields = '__all__'
         widgets = {
-            'date': forms.TextInput(attrs={'class': 'persian-date-picker'}),
+            'issuance_date': forms.TextInput(attrs={'class': 'persian-date-picker'}),
         }
