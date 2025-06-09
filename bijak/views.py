@@ -57,3 +57,25 @@ def search_page(request):
 
 def print_page(request):
     return render(request, 'print.html')
+
+
+def add_sender(request):
+    if request.method == 'POST':
+        form = SenderForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('form')  # بازگشت به فرم بارنامه
+    else:
+        form = SenderForm()
+    return render(request, 'add_sender.html', {'form': form})
+
+
+def add_receiver(request):
+    if request.method == 'POST':
+        form = SenderForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('form')  # بازگشت به فرم بارنامه
+    else:
+        form = SenderForm()
+    return render(request, 'add_receiver.html', {'form': form})

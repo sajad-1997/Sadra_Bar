@@ -6,56 +6,92 @@
     <head>
         <meta charset="UTF-8">
         <title>فرم بارنامه کامل</title>
-        <link href="https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap" rel="stylesheet">
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap">
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
     </head>
     <body>
     <div class="container">
         <h2>فرم ثبت بارنامه جدید</h2>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
         <form method="post">
             {% csrf_token %}
-            <div class="section">
-                <h3>اطلاعات بارنامه</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="section">
+                        <h3>اطلاعات بارنامه</h3>
+                        <hr>
+                        {{ shipment_form.as_p }}
+                    </div>
+                </div>
+                <br>
+                <div class="col-md-6">
+                    <div class="section">
+                        <h3>اطلاعات محموله</h3>
+                        <hr>
+                        {{ cargo_form.as_p }}
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="section">
+                            <h3>اطلاعات فرستنده</h3>
+                            <hr>
+                            {{ sender_form.as_p }}
+                        </div>
+                        <select name="shipment-sender" id="sender-select">
+                            {% for sender in sender_form.fields.sender.queryset %}
+                                <option value="{{ sender.id }}">{{ sender.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <a href="{% url 'add_sender' %}" target="_self">افزودن فرستنده جدید</a>
+                    </div>
+                    <br>
+                    <div class="col-md-6">
+                        <div class="section">
+                            <h3>اطلاعات گیرنده</h3>
+                            <hr>
+                            {{ receiver_form.as_p }}
+                        </div>
+                        <select name="shipment-receiver" id="receiver-select">
+                            {% for receiver in receiver_form.fields.receiver.queryset %}
+                                <option value="{{ receiver.id }}">{{ receiver.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <a href="{% url 'add_receiver' %}" target="_self">افزودن گیرنده جدید</a>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="section">
+                            <h3>اطلاعات راننده</h3>
+                            <hr>
+                            {{ driver_form.as_p }}
+                        </div>
+                    </div>
+                    <br>
+                    <div class="col-md-6">
+                        <div class="section">
+                            <h3>اطلاعات خودرو</h3>
+                            <hr>
+                            {{ vehicle_form.as_p }}
+                        </div>
+                    </div>
+                </div>
                 <hr>
-                {{ shipment_form.as_p }}
-            </div>
-            <br>
-            <div class="section">
-                <h3>اطلاعات فرستنده</h3>
+                <div style="text-align: center;">
+                    <button type="submit">ثبت</button>
+                    <button type="submit" rel={% url 'print' %}>چاپ</button>
+                </div>
                 <hr>
-                {{ sender_form.as_p }}
             </div>
-            <br>
-            <div class="section">
-                <h3>اطلاعات گیرنده</h3>
-                <hr>
-                {{ receiver_form.as_p }}
-            </div>
-            <br>
-            <div class="section">
-                <h3>اطلاعات راننده</h3>
-                <hr>
-                {{ driver_form.as_p }}
-            </div>
-            <br>
-            <div class="section">
-                <h3>اطلاعات خودرو</h3>
-                <hr>
-                {{ vehicle_form.as_p }}
-            </div>
-            <br>
-            <div class="section">
-                <h3>اطلاعات محموله</h3>
-                <hr>
-                {{ cargo_form.as_p }}
-            </div>
-            <hr>
-            <div style="text-align: center;">
-                <button type="submit">ثبت</button>
-                <button type="submit" rel={% url 'print' %}>چاپ</button>
-            </div>
-            <hr>
         </form>
     </div>
 
