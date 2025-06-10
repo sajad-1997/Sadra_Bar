@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import create_all_forms, success_page, search_page, print_page, add_sender, add_receiver
+from .views import *
 
 urlpatterns = [
     path('issuance/', create_all_forms, name='form'),
@@ -8,5 +8,7 @@ urlpatterns = [
     path('print/', print_page, name='print'),
     path('add-sender/', add_sender, name='add_sender'),
     path('add-receiver/', add_receiver, name='add_receiver'),
+    path('add-driver/', add_driver, name='add_driver'),
+    path('add-vehicle/', add_vehicle, name='add_vehicle'),
 
 ]

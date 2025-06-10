@@ -37,7 +37,7 @@ def create_all_forms(request):
         vehicle_form = VehicleForm(prefix='vehicle')
         shipment_form = BijakForm(prefix='shipment')
 
-    return render(request, 'full_form.html', {
+    return render(request, 'issuance_form.html', {
         'sender_form': sender_form,
         'receiver_form': receiver_form,
         'cargo_form': cargo_form,
@@ -72,10 +72,32 @@ def add_sender(request):
 
 def add_receiver(request):
     if request.method == 'POST':
-        form = SenderForm(request.POST)
+        form = ReceiverForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('form')  # بازگشت به فرم بارنامه
     else:
-        form = SenderForm()
+        form = ReceiverForm()
     return render(request, 'add_receiver.html', {'form': form})
+
+
+def add_driver(request):
+    if request.method == 'POST':
+        form = DriverForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('form')  # بازگشت به فرم بارنامه
+    else:
+        form = DriverForm()
+    return render(request, 'add_driver.html', {'form': form})
+
+
+def add_vehicle(request):
+    if request.method == 'POST':
+        form = VehicleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('form')  # بازگشت به فرم بارنامه
+    else:
+        form = VehicleForm()
+    return render(request, 'add_vehicle.html', {'form': form})

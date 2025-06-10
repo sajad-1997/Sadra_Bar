@@ -41,7 +41,7 @@ class Driver(models.Model):
 
 
 class Vehicle(models.Model):
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, verbose_name="انتخاب راننده")
     type = models.CharField(max_length=10, verbose_name="نوع وسیله")
     license_plate_three_digit = models.IntegerField(max_length=3, verbose_name="سه رقم پلاک")
     license_plate_alphabet = models.CharField(max_length=1, verbose_name="الفبای پلاک")

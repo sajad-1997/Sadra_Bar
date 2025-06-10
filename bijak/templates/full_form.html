@@ -46,11 +46,16 @@
                             {{ sender_form.as_p }}
                         </div>
                         <select name="shipment-sender" id="sender-select">
+                            <option value="">-- انتخاب فرستنده --</option>
                             {% for sender in sender_form.fields.sender.queryset %}
                                 <option value="{{ sender.id }}">{{ sender.name }}</option>
                             {% endfor %}
                         </select>
-                        <a href="{% url 'add_sender' %}" target="_self">افزودن فرستنده جدید</a>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'add_sender' %}" target="_blank" class="btn btn-primary">
+                                افزودن فرستنده جدید
+                            </a>
+                        </div>
                     </div>
                     <br>
                     <div class="col-md-6">
@@ -64,7 +69,11 @@
                                 <option value="{{ receiver.id }}">{{ receiver.name }}</option>
                             {% endfor %}
                         </select>
-                        <a href="{% url 'add_receiver' %}" target="_self">افزودن گیرنده جدید</a>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'add_receiver' %}" target="_blank" class="btn btn-primary">
+                                افزودن گیرنده جدید
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <br>

@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% load static %}
+    <!DOCTYPE html>
+    <html lang="fa" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <title>فرم صدور بارنامه</title>
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap">
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
+         <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+
+    </head>
+    <body>
+    <div class="container">
+        <h2>فرم ثبت بارنامه جدید</h2>
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="section">
+                        <h3>اطلاعات فرستنده</h3>
+                        <hr>
+                        <select name="shipment-sender" id="sender-select">
+                            <option value="">-- انتخاب فرستنده --</option>
+                            {% for sender in sender_form.fields.sender.queryset %}
+                                <option value="{{ sender.id }}">{{ sender.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'add_sender' %}" target="_self" class="btn btn-secondary btn-lg btn-block">
+                                افزودن فرستنده جدید
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="col-md-6">
+                    <div class="section">
+                        <h3>اطلاعات گیرنده</h3>
+                        <hr>
+                        <select name="shipment-receiver" id="receiver-select">
+                            <option value="">-- انتخاب گیرنده --</option>
+                            {% for receiver in receiver_form.fields.receiver.queryset %}
+                                <option value="{{ receiver.id }}">{{ receiver.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'add_receiver' %}" target="_self"
+                               class="btn btn-secondary btn-lg btn-block">
+                                افزودن گیرنده جدید
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="section">
+                        <h3>اطلاعات راننده</h3>
+                        <hr>
+                        <select name="shipment-driver" id="driver-select">
+                            <option value="">-- انتخاب راننده --</option>
+                            {% for driver in driver_form.fields.driver.queryset %}
+                                <option value="{{ driver.id }}">{{ driver.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'add_driver' %}" target="_self" class="btn btn-secondary btn-lg btn-block">
+                                افزودن راننده جدید
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="col-md-6">
+                    <div class="section">
+                        <h3>اطلاعات خودروی راننده</h3>
+                        <hr>
+                        <select name="shipment-vehicle" id="vehicle-select">
+                            <option value="">-- انتخاب خودرو --</option>
+                            {% for vehicle in vehicle_form.fields.vehicle.queryset %}
+                                <option value="{{ vehicle.id }}">{{ driver.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="text-center mt-2">
+                            <a href="{% url 'add_vehicle' %}" target="_self" class="btn btn-secondary btn-lg btn-block">
+                                افزودن خودرو جدید
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="section">
+                        <h3>اطلاعات بارنامه</h3>
+                        <hr>
+                        {{ shipment_form.as_p }}
+                    </div>
+                </div>
+                <br>
+                <div class="col-md-6">
+                    <div class="section">
+                        <h3>اطلاعات محموله</h3>
+                        <hr>
+                        {{ cargo_form.as_p }}
+                    </div>
+                </div>
+                <br>
+            </div>
+            <hr>
+            <div style="text-align: center;">
+                <button type="submit" class="btn btn-secondary">ثبت</button>
+                <button type="submit" class="btn btn-success" rel={% url 'print' %}>ثبت و چاپ</button>
+            </div>
+            <hr>
+    </div>
+    </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            $('.persian-date-picker').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false
+            });
+        });
+    </script>
+    </body>
+    </html>
+{% endblock %}
