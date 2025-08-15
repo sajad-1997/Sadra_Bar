@@ -10,11 +10,8 @@
               href="https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap">
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
-
-         <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <link rel="stylesheet" href="/static/style.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+        <link rel="stylesheet" href="/static/style.css">
 
     </head>
     <body>
@@ -32,10 +29,10 @@
                         <h3>اطلاعات فرستنده</h3>
                         <hr>
                         <select name="shipment-sender" id="sender-select">
-                            <option value="">-- انتخاب فرستنده --</option>
-                            {% for sender in sender_form.fields.sender.queryset %}
-                                <option value="{{ sender.id }}">{{ sender.name }}</option>
-                            {% endfor %}
+                            <option value="{{ sender.id }}">{{ sender.name }}</option>
+                            {#                            {% for sender in sender_form.fields.sender.queryset %}#}
+                            {#                                <option value="{{ sender.id }}">{{ sender.name }}</option>#}
+                            {#                            {% endfor %}#}
                         </select>
                         <div class="text-center mt-2">
                             <a href="{% url 'add_sender' %}" target="_self" class="btn btn-secondary btn-lg btn-block">
@@ -49,12 +46,12 @@
                     <div class="section">
                         <h3>اطلاعات گیرنده</h3>
                         <hr>
-                        <select name="shipment-receiver" id="receiver-select">
-                            <option value="">-- انتخاب گیرنده --</option>
-                            {% for receiver in receiver_form.fields.receiver.queryset %}
-                                <option value="{{ receiver.id }}">{{ receiver.name }}</option>
-                            {% endfor %}
-                        </select>
+{#                        <select name="shipment-receiver" id="receiver-select">#}
+{#                            <option value="">-- انتخاب گیرنده --</option>#}
+{#                            {% for receiver in receiver_form.fields.receiver.queryset %}#}
+{#                                <option value="{{ receiver.id }}">{{ receiver.name }}</option>#}
+{#                            {% endfor %}#}
+{#                        </select>#}
                         <div class="text-center mt-2">
                             <a href="{% url 'add_receiver' %}" target="_self"
                                class="btn btn-secondary btn-lg btn-block">
@@ -106,6 +103,10 @@
                 <div class="col-md-6">
                     <div class="section">
                         <h3>اطلاعات بارنامه</h3>
+                        <label for="shipment-date">تاریخ:</label>
+                        <input type="text" name="shipment-date" id="shipment-date"
+                               class="form-control persian-date-picker">
+
                         <hr>
                         {{ shipment_form.as_p }}
                     </div>
@@ -135,13 +136,34 @@
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            $('.persian-date-picker').persianDatepicker({
-                format: 'YYYY/MM/DD',
-                autoClose: true,
-                initialValue: false
+        $(document).ready(function () {
+            $('#search-input').on('keyup', function () {
+                let query = $(this).val();
+                $.ajax({
+                    url: "{% url 'search_receiver' %}",
+                    data: {q: query},
+                    success: function (data) {
+                        let html = "";
+                        if (data.results.length > 0) {
+                            data.results.forEach(function (item) {
+                                html += "<p><strong>" + item.name + "</strong> - " + (item.phone || '') + "</p>";
+                            });
+                        } else {
+                            html = "<p>نتیجه‌ای یافت نشد</p>";
+                        }
+                        $('#results').html(html);
+                    }
+                });
+                if ($('.persian-date-picker').length && typeof persianDate !== 'undefined') {
+                    $('.persian-date-picker').persianDatepicker({
+                        format: 'YYYY/MM/DD',
+                        autoClose: true,
+                        initialValue: false
+                    });
+                } else {
+                    console.warn('persianDate یا المنت تقویم پیدا نشد');
+                }
             });
-        });
     </script>
     </body>
     </html>

@@ -1,15 +1,18 @@
 from django.shortcuts import render, redirect
-from .forms import SenderForm, ReceiverForm, DriverForm, VehicleForm, CargoForm, BijakForm
+from .models import Receiver
+from .forms import SenderForm, ReceiverForm, DriverForm, VehicleForm, CargoForm, ShipmentForm
 
 
 def create_all_forms(request):
+    receivers = Receiver.objects.all()
+
     if request.method == 'POST':
         sender_form = SenderForm(request.POST, prefix='sender')
         receiver_form = ReceiverForm(request.POST, prefix='receiver')
         cargo_form = CargoForm(request.POST, prefix='cargo')
         driver_form = DriverForm(request.POST, prefix='driver')
         vehicle_form = VehicleForm(request.POST, prefix='vehicle')
-        shipment_form = BijakForm(request.POST, prefix='shipment')
+        shipment_form = ShipmentForm(request.POST, prefix='shipment')
 
         if all([sender_form.is_valid(), receiver_form.is_valid(), cargo_form.is_valid(), driver_form.is_valid(),
                 vehicle_form.is_valid(), shipment_form.is_valid()]):
@@ -35,17 +38,20 @@ def create_all_forms(request):
         cargo_form = CargoForm(prefix='cargo')
         driver_form = DriverForm(prefix='driver')
         vehicle_form = VehicleForm(prefix='vehicle')
-        shipment_form = BijakForm(prefix='shipment')
+        shipment_form = ShipmentForm(prefix='shipment')
 
     return render(request, 'issuance_form.html', {
         'sender_form': sender_form,
         'receiver_form': receiver_form,
+        'receivers': receivers,
         'cargo_form': cargo_form,
         'driver_form': driver_form,
         'vehicle_form': vehicle_form,
         'shipment_form': shipment_form
     })
 
+
+# page render defs
 
 def success_page(request):
     return render(request, 'success.html')
@@ -58,6 +64,8 @@ def search_page(request):
 def print_page(request):
     return render(request, 'print.html')
 
+
+# add date defs
 
 def add_sender(request):
     if request.method == 'POST':
