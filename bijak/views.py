@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import Receiver
+from django.http import JsonResponse
+from .models import Receiver, Sender, Driver, Vehicle
 from .forms import SenderForm, ReceiverForm, DriverForm, VehicleForm, CargoForm, ShipmentForm
 
 
@@ -49,6 +50,39 @@ def create_all_forms(request):
         'vehicle_form': vehicle_form,
         'shipment_form': shipment_form
     })
+
+
+def search_sender(request):
+    query = request.GET.get('q', '')
+    results = Sender.objects.filter(name__icontains=query)[:10]
+    data = [{"id": r.id, "name": r.name, "phone": r.phone} for r in results]
+    return JsonResponse({"results": data})
+
+
+def search_receiver(request):
+    query = request.GET.get('q', '').strip()
+    if query:
+        results = Receiver.objects.filter(name__icontains=query)[:10]
+    else:
+        results = []
+    data = [{"id": r.id, "name": r.name, "phone": r.phone} for r in results]
+    return JsonResponse({"results": data})
+
+
+def search_driver(request):
+    query = request.GET.get('q', '')
+    results = Driver.objects.filter(name__icontains=query)[:10]
+    data = [{"id": r.id, "name": r.name, "national_id": r.national_id} for r in results]
+    return JsonResponse({"results": data})
+
+
+def search_vehicle(request):
+    query = request.GET.get('q', '')
+    results = Vehicle.objects.filter(name__icontains=query)[:10]
+    data = [{"id": r.id, "license_plate_three_digit": r.license_plate_three_digit,
+             "license_plate_alphabet": r.license_plate_alphabet, "license_plate_two_digit": r.license_plate_two_digit}
+            for r in results]
+    return JsonResponse({"results": data})
 
 
 # page render defs

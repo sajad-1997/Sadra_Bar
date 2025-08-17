@@ -28,16 +28,28 @@
                     <div class="section">
                         <h3>اطلاعات فرستنده</h3>
                         <hr>
-                        <select name="shipment-sender" id="sender-select">
-                            <option value="{{ sender.id }}">{{ sender.name }}</option>
-                            {#                            {% for sender in sender_form.fields.sender.queryset %}#}
-                            {#                                <option value="{{ sender.id }}">{{ sender.name }}</option>#}
-                            {#                            {% endfor %}#}
-                        </select>
-                        <div class="text-center mt-2">
-                            <a href="{% url 'add_sender' %}" target="_self" class="btn btn-secondary btn-lg btn-block">
-                                افزودن فرستنده جدید
-                            </a>
+                        <div class="row">
+                            <div class="text-center col-md-10">
+                                <input type="text" id="receiver-input" placeholder="نام گیرنده را انتخاب کنید...">
+
+                                {#                                <select name="shipment-sender" id="sender-select">#}
+                                {#                                    <option value="{{ sender.id }}">{{ sender.name }}</option>#}
+                                {#                            {% for sender in sender_form.fields.sender.queryset %}#}
+                                {#                                <option value="{{ sender.id }}">{{ sender.name }}</option>#}
+                                {#                            {% endfor %}#}
+                                {#                                </select>#}
+
+                            </div>
+                            <div class="text-center col-md-1">
+                                <a href="{% url 'add_sender' %}" target="_self"
+                                   class="btn btn-secondary btn-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                         fill="currentColor"
+                                         class="bi bi-plus" viewBox="0 0 16 16">
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -46,89 +58,127 @@
                     <div class="section">
                         <h3>اطلاعات گیرنده</h3>
                         <hr>
-{#                        <select name="shipment-receiver" id="receiver-select">#}
-{#                            <option value="">-- انتخاب گیرنده --</option>#}
-{#                            {% for receiver in receiver_form.fields.receiver.queryset %}#}
-{#                                <option value="{{ receiver.id }}">{{ receiver.name }}</option>#}
-{#                            {% endfor %}#}
-{#                        </select>#}
-                        <div class="text-center mt-2">
-                            <a href="{% url 'add_receiver' %}" target="_self"
-                               class="btn btn-secondary btn-lg btn-block">
-                                افزودن گیرنده جدید
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="section">
-                        <h3>اطلاعات راننده</h3>
-                        <hr>
-                        <select name="shipment-driver" id="driver-select">
-                            <option value="">-- انتخاب راننده --</option>
-                            {% for driver in driver_form.fields.driver.queryset %}
-                                <option value="{{ driver.id }}">{{ driver.name }}</option>
-                            {% endfor %}
-                        </select>
-                        <div class="text-center mt-2">
-                            <a href="{% url 'add_driver' %}" target="_self" class="btn btn-secondary btn-lg btn-block">
-                                افزودن راننده جدید
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <br>
-                <div class="col-md-6">
-                    <div class="section">
-                        <h3>اطلاعات خودروی راننده</h3>
-                        <hr>
-                        <select name="shipment-vehicle" id="vehicle-select">
-                            <option value="">-- انتخاب خودرو --</option>
-                            {% for vehicle in vehicle_form.fields.vehicle.queryset %}
-                                <option value="{{ vehicle.id }}">{{ driver.name }}</option>
-                            {% endfor %}
-                        </select>
-                        <div class="text-center mt-2">
-                            <a href="{% url 'add_vehicle' %}" target="_self" class="btn btn-secondary btn-lg btn-block">
-                                افزودن خودرو جدید
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="section">
-                        <h3>اطلاعات بارنامه</h3>
-                        <label for="shipment-date">تاریخ:</label>
-                        <input type="text" name="shipment-date" id="shipment-date"
-                               class="form-control persian-date-picker">
+                        <div class="row">
+                            <div class="text-center col-md-10">
+                                <input type="text" id="search-input" placeholder="نام گیرنده را وارد کنید...">
+                                <input type="hidden" name="receiver_id" id="receiver-id">
+                                <div class="result-box hidden" id="results"></div>
 
-                        <hr>
-                        {{ shipment_form.as_p }}
+                                {#                                <input type="text" id="receiver-input" placeholder="نام گیرنده را انتخاب کنید...">#}
+
+                                {#                                <select name="shipment-receiver" id="receiver_select">#}
+                                {#                                    <option value="">-- انتخاب گیرنده --</option>#}
+                                {#                                    {% for receiver in receiver_form.fields.receiver.queryset %}#}
+                                {#                                        <option value="{{ receiver.id }}">{{ receiver.name }}</option>#}
+                                {#                                    {% endfor %}#}
+                                {#                                </select>#}
+
+                                {#                                <div class="result-box" id="results"></div>#}
+                                {#                                {{ receiver_form.as_p }}#}
+                            </div>
+                            <div class="text-center col-md-1">
+                                <a href="{% url 'add_receiver' %}" target="_self"
+                                   class="btn btn-secondary btn-lg btn-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                         fill="currentColor"
+                                         class="bi bi-plus" viewBox="0 0 16 16">
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <br>
-                <div class="col-md-6">
-                    <div class="section">
-                        <h3>اطلاعات محموله</h3>
-                        <hr>
-                        {{ cargo_form.as_p }}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="section">
+                            <h3>اطلاعات راننده</h3>
+                            <hr>
+                            <div class="row">
+                                <div class="text-center col-md-10">
+                                    <input type="text" id="driver-input" placeholder="نام راننده را جستجو کنید...">
+
+                                    {#                                    <select name="shipment-driver" id="driver-select">#}
+                                    {#                                        <option value="">-- انتخاب راننده --</option>#}
+                                    {#                                        {% for driver in driver_form.fields.driver.queryset %}#}
+                                    {#                                            <option value="{{ driver.id }}">{{ driver.name }}</option>#}
+                                    {#                                        {% endfor %}#}
+                                    {#                                    </select>#}
+
+                                    {{ driver_form.as_p }}
+                                </div>
+                                <div class="text-center col-md-1">
+                                    <a href="{% url 'add_driver' %}" target="_self"
+                                       class="btn btn-secondary btn-lg btn-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                             fill="currentColor"
+                                             class="bi bi-plus" viewBox="0 0 16 16">
+                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <br>
+                    <div class="col-md-6">
+                        <div class="section">
+                            <h3>اطلاعات خودروی راننده</h3>
+                            <hr>
+                            <div class="row">
+                                <div class="text-center col-md-10">
+                                    <input type="text" id="driver-input" placeholder="نام راننده را انتخاب کنید...">
+
+                                    {#                                    <select name="shipment-vehicle" id="vehicle-select">#}
+                                    {#                                        <option value="">-- انتخاب خودرو --</option>#}
+                                    {#                                        {% for vehicle in vehicle_form.fields.vehicle.queryset %}#}
+                                    {#                                            <option value="{{ vehicle.id }}">{{ driver.name }}</option>#}
+                                    {#                                        {% endfor %}#}
+                                    {#                                    </select>#}
+
+                                    {{ vehicle_form.as_p }}
+
+                                </div>
+                                <div class="text-center col-md-1">
+                                    <a href="{% url 'add_vehicle' %}" target="_self"
+                                       class="btn btn-secondary btn-lg btn-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                             fill="currentColor"
+                                             class="bi bi-plus" viewBox="0 0 16 16">
+                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="section">
+                                <h3>اطلاعات بارنامه</h3>
+                                <hr>
+                                {{ shipment_form.as_p }}
+                            </div>
+                        </div>
+                        <br>
+                        <div class="col-md-6">
+                            <div class="section">
+                                <h3>اطلاعات محموله</h3>
+                                <hr>
+                                {{ cargo_form.as_p }}
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+                    <hr>
+                    <div style="text-align: center;">
+                        <button type="submit" class="btn btn-secondary">ثبت</button>
+                        <button type="submit" class="btn btn-success" rel={% url 'print' %}>ثبت و چاپ</button>
+                    </div>
+                    <hr>
                 </div>
-                <br>
-            </div>
-            <hr>
-            <div style="text-align: center;">
-                <button type="submit" class="btn btn-secondary">ثبت</button>
-                <button type="submit" class="btn btn-success" rel={% url 'print' %}>ثبت و چاپ</button>
-            </div>
-            <hr>
-    </div>
-    </form>
+        </form>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -137,33 +187,78 @@
 
     <script>
         $(document).ready(function () {
-            $('#search-input').on('keyup', function () {
-                let query = $(this).val();
+            let selectedIndex = -1;
+
+            $('#search-input').on('keyup', function (e) {
+                let query = $(this).val().trim();
+
+                // کنترل کلیدهای جهت و اینتر
+                if (e.keyCode === 38) { // Arrow Up
+                    if (selectedIndex > 0) selectedIndex--;
+                    highlightItem();
+                    return;
+                }
+                if (e.keyCode === 40) { // Arrow Down
+                    if (selectedIndex < $('#results .result-item').length - 1) selectedIndex++;
+                    highlightItem();
+                    return;
+                }
+                if (e.keyCode === 13) { // Enter
+                    e.preventDefault();
+                    let selected = $('#results .result-item').eq(selectedIndex);
+                    if (selected.length) {
+                        chooseItem(selected);
+                    }
+                    return;
+                }
+
+                if (query.length === 0) {
+                    $('#results').empty().addClass('hidden');
+                    selectedIndex = -1;
+                    return;
+                }
+
                 $.ajax({
-                    url: "{% url 'search_receiver' %}",
+                    url: "{% url 'search_receiver_keyboard' %}",
                     data: {q: query},
                     success: function (data) {
                         let html = "";
                         if (data.results.length > 0) {
                             data.results.forEach(function (item) {
-                                html += "<p><strong>" + item.name + "</strong> - " + (item.phone || '') + "</p>";
+                                html += `<div class="result-item" data-id="${item.id}" data-name="${item.name}">
+                                    <strong>${item.name}</strong>
+                                    ${item.phone ? " - " + item.phone : ""}
+                                 </div>`;
                             });
                         } else {
-                            html = "<p>نتیجه‌ای یافت نشد</p>";
+                            html = "<div class='result-item'>نتیجه‌ای یافت نشد</div>";
                         }
-                        $('#results').html(html);
+                        $('#results').html(html).removeClass('hidden');
+                        selectedIndex = -1;
                     }
                 });
-                if ($('.persian-date-picker').length && typeof persianDate !== 'undefined') {
-                    $('.persian-date-picker').persianDatepicker({
-                        format: 'YYYY/MM/DD',
-                        autoClose: true,
-                        initialValue: false
-                    });
-                } else {
-                    console.warn('persianDate یا المنت تقویم پیدا نشد');
-                }
             });
+
+            function highlightItem() {
+                $('#results .result-item').removeClass('active');
+                if (selectedIndex >= 0) {
+                    $('#results .result-item').eq(selectedIndex).addClass('active');
+                }
+            }
+
+            function chooseItem(item) {
+                let name = item.data('name');
+                let id = item.data('id');
+                $('#search-input').val(name);
+                $('#receiver-id').val(id);
+                $('#results').empty().addClass('hidden');
+            }
+
+            // انتخاب با ماوس
+            $(document).on('click', '.result-item', function () {
+                chooseItem($(this));
+            });
+        });
     </script>
     </body>
     </html>
