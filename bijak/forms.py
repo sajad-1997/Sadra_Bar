@@ -32,6 +32,13 @@ class VehicleForm(forms.ModelForm):
         fields = '__all__'
 
 
+class CarPlateForm(forms.Form):
+    part1 = forms.CharField(max_length=2, label="عدد اول")
+    letter = forms.CharField(max_length=1, label="حرف پلاک")
+    part2 = forms.CharField(max_length=3, label="عدد وسط")
+    province = forms.CharField(max_length=2, label="کد استان")
+
+
 class CargoForm(forms.ModelForm):
     class Meta:
         model = Cargo

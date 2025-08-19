@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from .models import Receiver, Sender, Driver, Vehicle
-from .forms import SenderForm, ReceiverForm, DriverForm, VehicleForm, CargoForm, ShipmentForm
+from .forms import SenderForm, ReceiverForm, DriverForm, VehicleForm, CargoForm, ShipmentForm, CarPlateForm
 
 
 def create_all_forms(request):
@@ -147,10 +147,10 @@ def add_driver(request):
 
 def add_vehicle(request):
     if request.method == 'POST':
-        form = VehicleForm(request.POST)
+        form = CarPlateForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('form')  # بازگشت به فرم بارنامه
     else:
-        form = VehicleForm()
+        form = CarPlateForm()
     return render(request, 'add_vehicle.html', {'form': form})

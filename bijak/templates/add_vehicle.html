@@ -38,6 +38,46 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
+        body {
+            font-family: Vazirmatn, sans-serif;
+            direction: rtl;
+            padding: 30px;
+            background: #f7f7f7;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background: #fff;
+            font-size: 18px;
+        }
+
+        .plate {
+            display: inline-block;
+            padding: 10px 15px;
+            border: 2px solid #000;
+            border-radius: 6px;
+            background: #fefefe;
+            font-weight: bold;
+            font-size: 22px;
+            letter-spacing: 3px;
+        }
+
+        .iran {
+            display: inline-block;
+            margin-right: 10px;
+            font-size: 16px;
+            color: #0d47a1;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -46,8 +86,44 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
+        <button type="button" onclick="parsePlate()">نمایش پلاک</button>
         <button type="submit">ذخیره</button>
+        <div class="result" id="result"></div>
+
     </form>
 </div>
+{##}
+{#<h2>ورود شماره پلاک خودرو</h2>#}
+{#<p>مثال: <strong>12الف34567</strong></p>#}
+{##}
+{#<input type="text" id="plateInput" placeholder="شماره پلاک را وارد کنید">#}
+{#<button onclick="parsePlate()">نمایش</button>#}
+{##}
+{#<div class="result" id="result"></div>#}
+
+<script>
+    function parsePlate() {
+        const license_plate_three_digit = document.getElementById('id_part1').value.trim();
+        const license_plate_alphabet = document.getElementById('id_letter').value.trim();
+        const license_plate_two_digit = document.getElementById('id_part2').value.trim();
+        const license_plate_series = document.getElementById('id_province').value.trim();
+
+        if (/^\d{2}$/.test(license_plate_three_digit) && /^[اآبپتثجچحخدذرزسشصضطظعغفقکگلمنوهی]$/.test(license_plate_alphabet)
+            && /^\d{3}$/.test(license_plate_two_digit) && /^\d{2}$/.test(license_plate_series)) {
+            document.getElementById('result').innerHTML = `
+        <div class="plate" style="display:inline-block;padding:10px 15px;
+             border:2px solid #000;border-radius:6px;background:#fefefe;
+             font-weight:bold;font-size:22px;letter-spacing:3px;">
+          ${license_plate_three_digit} - ${license_plate_alphabet} - ${license_plate_two_digit}
+          <span style="margin-right:10px;font-size:16px;
+                color:#0d47a1;font-weight:bold;">${license_plate_series} ایران </span>
+        </div>
+      `;
+        } else {
+            document.getElementById('result').innerHTML = "<p style='color:red'>فرمت فیلدها معتبر نیست!</p>";
+        }
+    }
+</script>
+
 </body>
 </html>
