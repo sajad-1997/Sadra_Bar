@@ -70,19 +70,30 @@ def search_receiver(request):
 
 
 def search_driver(request):
-    query = request.GET.get('q', '')
-    results = Driver.objects.filter(name__icontains=query)[:10]
-    data = [{"id": r.id, "name": r.name, "national_id": r.national_id} for r in results]
-    return JsonResponse({"results": data})
+    q = request.GET.get("q", "")
+    drivers = Driver.objects.filter(name__icontains=q)[:10]
+
+    results = []
+    for d in drivers:
+        try:
+            vehicle = Vehicle.objects.get(driver=d)
+            plate = vehicle.license_plate_three_digit
+        except Vehicle.DoesNotExist:
+            plate = ""
+
+        results.append({
+            "id": d.id,
+            "name": d.name,
+            "phone": d.phone,
+            "plate_number": plate  # 👈 پلاک هم اضافه شد
+        })
+    return JsonResponse({"results": results})
 
 
 def search_vehicle(request):
-    query = request.GET.get('q', '')
-    results = Vehicle.objects.filter(name__icontains=query)[:10]
-    data = [{"id": r.id, "license_plate_three_digit": r.license_plate_three_digit,
-             "license_plate_alphabet": r.license_plate_alphabet, "license_plate_two_digit": r.license_plate_two_digit}
-            for r in results]
-    return JsonResponse({"results": data})
+    q = request.GET.get("q", "")
+    results = Vehicle.objects.filter(plate__icontains=q)[:10]
+    return JsonResponse({"results": list(results.values("id", "plate"))})
 
 
 # page render defs

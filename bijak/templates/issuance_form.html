@@ -30,8 +30,13 @@
                         <hr>
                         <div class="row">
                             <div class="text-center col-md-10">
-                                <input type="text" id="receiver-input" placeholder="نام گیرنده را انتخاب کنید...">
 
+                                <input type="text" id="sender-input" autocomplete="off"
+                                       placeholder="نام فرستنده را انتخاب کنید...">
+                                <input type="hidden" id="sender-id" name="sender_id">
+                                <div id="sender-results" class="list-group"></div>
+
+                                {#                                <input type="text" id="receiver-input" placeholder="نام گیرنده را انتخاب کنید...">#}
                                 {#                                <select name="shipment-sender" id="sender-select">#}
                                 {#                                    <option value="{{ sender.id }}">{{ sender.name }}</option>#}
                                 {#                            {% for sender in sender_form.fields.sender.queryset %}#}
@@ -60,9 +65,10 @@
                         <hr>
                         <div class="row">
                             <div class="text-center col-md-10">
-                                <input type="text" id="search-input" placeholder="نام گیرنده را وارد کنید...">
-                                <input type="hidden" name="receiver_id" id="receiver-id">
-                                <div class="result-box hidden" id="results"></div>
+                                <input type="text" id="receiver-input" autocomplete="off"
+                                       placeholder="نام گیرنده را انتخاب کنید...">
+                                <input type="hidden" id="receiver-id" name="receiver_id">
+                                <div id="receiver-results" class="list-group"></div>
 
                                 {#                                <input type="text" id="receiver-input" placeholder="نام گیرنده را انتخاب کنید...">#}
 
@@ -97,7 +103,12 @@
                             <hr>
                             <div class="row">
                                 <div class="text-center col-md-10">
-                                    <input type="text" id="driver-input" placeholder="نام راننده را جستجو کنید...">
+
+                                    <input type="text" id="driver-input" class="form-control" placeholder="نام راننده را وارد کنید">
+                                    <input type="hidden" id="driver-id" name="driver">
+                                    <div id="driver-results" class="list-group"></div>
+
+                                    {#                                    <input type="text" id="driver-input" placeholder="نام راننده را جستجو کنید...">#}
 
                                     {#                                    <select name="shipment-driver" id="driver-select">#}
                                     {#                                        <option value="">-- انتخاب راننده --</option>#}
@@ -106,7 +117,6 @@
                                     {#                                        {% endfor %}#}
                                     {#                                    </select>#}
 
-                                    {{ driver_form.as_p }}
                                 </div>
                                 <div class="text-center col-md-1">
                                     <a href="{% url 'add_driver' %}" target="_self"
@@ -128,7 +138,12 @@
                             <hr>
                             <div class="row">
                                 <div class="text-center col-md-10">
-                                    <input type="text" id="driver-input" placeholder="نام راننده را انتخاب کنید...">
+
+{#                                    <label for="vehicle-plate">شماره پلاک</label>#}
+                                        <input type="text" id="vehicle-plate" name="vehicle_plate" class="form-control" placeholder="شماره پلاک راننده">
+
+
+                                    {#                                    <input type="text" id="driver-input" placeholder="نام راننده را انتخاب کنید...">#}
 
                                     {#                                    <select name="shipment-vehicle" id="vehicle-select">#}
                                     {#                                        <option value="">-- انتخاب خودرو --</option>#}
@@ -137,7 +152,6 @@
                                     {#                                        {% endfor %}#}
                                     {#                                    </select>#}
 
-                                    {{ vehicle_form.as_p }}
 
                                 </div>
                                 <div class="text-center col-md-1">
@@ -173,11 +187,13 @@
                     </div>
                     <hr>
                     <div style="text-align: center;">
-                        <button type="submit" class="btn btn-secondary">ثبت</button>
+                        <button type="submit" class="btn btn-success">ثبت</button>
                         <button type="submit" class="btn btn-success" rel={% url 'print' %}>ثبت و چاپ</button>
+                        <button type="submit" class="btn btn-secondary">ثبت موقت قبل از چاپ</button>
                     </div>
                     <hr>
                 </div>
+            </div>
         </form>
     </div>
 
@@ -186,80 +202,108 @@
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 
     <script>
-        $(document).ready(function () {
-            let selectedIndex = -1;
+function enableSearch(inputId, resultsId, hiddenId, searchUrl, extraOptions = {}) {
+    let selectedIndex = -1;
 
-            $('#search-input').on('keyup', function (e) {
-                let query = $(this).val().trim();
+    $(`#${inputId}`).on('keyup', function(e){
+        let query = $(this).val().trim();
 
-                // کنترل کلیدهای جهت و اینتر
-                if (e.keyCode === 38) { // Arrow Up
-                    if (selectedIndex > 0) selectedIndex--;
-                    highlightItem();
-                    return;
-                }
-                if (e.keyCode === 40) { // Arrow Down
-                    if (selectedIndex < $('#results .result-item').length - 1) selectedIndex++;
-                    highlightItem();
-                    return;
-                }
-                if (e.keyCode === 13) { // Enter
-                    e.preventDefault();
-                    let selected = $('#results .result-item').eq(selectedIndex);
-                    if (selected.length) {
-                        chooseItem(selected);
-                    }
-                    return;
-                }
+        // کنترل کلیدها
+        if(e.keyCode === 38){ // بالا
+            if(selectedIndex > 0) selectedIndex--;
+            highlightItem();
+            return;
+        }
+        if(e.keyCode === 40){ // پایین
+            if(selectedIndex < $(`#${resultsId} .list-group-item`).length - 1) selectedIndex++;
+            highlightItem();
+            return;
+        }
+        if(e.keyCode === 13){ // اینتر
+            e.preventDefault();
+            let selected = $(`#${resultsId} .list-group-item`).eq(selectedIndex);
+            if(selected.length){
+                chooseItem(selected);
+            }
+            return;
+        }
 
-                if (query.length === 0) {
-                    $('#results').empty().addClass('hidden');
-                    selectedIndex = -1;
-                    return;
-                }
+        if(query.length === 0){
+            $(`#${resultsId}`).empty().hide();
+            selectedIndex = -1;
+            return;
+        }
 
-                $.ajax({
-                    url: "{% url 'search_receiver_keyboard' %}",
-                    data: {q: query},
-                    success: function (data) {
-                        let html = "";
-                        if (data.results.length > 0) {
-                            data.results.forEach(function (item) {
-                                html += `<div class="result-item" data-id="${item.id}" data-name="${item.name}">
+        $.ajax({
+            url: searchUrl,
+            data: { q: query },
+            success: function(data){
+                let html = "";
+                if(data.results.length > 0){
+                    data.results.forEach(function(item){
+                        html += `<button type="button"
+                                    class="list-group-item list-group-item-action"
+                                    data-id="${item.id}"
+                                    data-name="${item.name}"
+                                    data-phone="${item.phone || ''}"
+                                    data-plate="${item.plate_number || ''}">
                                     <strong>${item.name}</strong>
                                     ${item.phone ? " - " + item.phone : ""}
-                                 </div>`;
-                            });
-                        } else {
-                            html = "<div class='result-item'>نتیجه‌ای یافت نشد</div>";
-                        }
-                        $('#results').html(html).removeClass('hidden');
-                        selectedIndex = -1;
-                    }
-                });
-            });
-
-            function highlightItem() {
-                $('#results .result-item').removeClass('active');
-                if (selectedIndex >= 0) {
-                    $('#results .result-item').eq(selectedIndex).addClass('active');
+                                 </button>`;
+                    });
+                } else {
+                    html = `<div class="list-group-item">نتیجه‌ای یافت نشد!!!</div>`;
                 }
+                $(`#${resultsId}`).html(html).show();
+                selectedIndex = -1;
             }
-
-            function chooseItem(item) {
-                let name = item.data('name');
-                let id = item.data('id');
-                $('#search-input').val(name);
-                $('#receiver-id').val(id);
-                $('#results').empty().addClass('hidden');
-            }
-
-            // انتخاب با ماوس
-            $(document).on('click', '.result-item', function () {
-                chooseItem($(this));
-            });
         });
-    </script>
+    });
+
+    function highlightItem(){
+        $(`#${resultsId} .list-group-item`).removeClass('active');
+        if(selectedIndex >= 0){
+            $(`#${resultsId} .list-group-item`).eq(selectedIndex).addClass('active');
+        }
+    }
+
+    function chooseItem(item){
+        let name = item.data('name');
+        let id = item.data('id');
+        let plate = item.data('plate');  // شماره پلاک مخصوص راننده
+
+        $(`#${inputId}`).val(name);
+        $(`#${hiddenId}`).val(id);
+
+        // اگر extraOptions برای راننده بود → پلاک رو هم ست کن
+        if(extraOptions.fillPlateField && plate !== undefined){
+            $(`#${extraOptions.fillPlateField}`).val(plate);
+        }
+
+        $(`#${resultsId}`).empty().hide();
+    }
+
+    // انتخاب با کلیک ماوس
+    $(document).on('click', `#${resultsId} .list-group-item`, function(){
+        chooseItem($(this));
+    });
+}
+
+// فعال‌سازی برای چند فیلد
+$(document).ready(function(){
+    enableSearch("receiver-input", "receiver-results", "receiver-id", "{% url 'search_receiver' %}");
+    enableSearch("sender-input", "sender-results", "sender-id", "{% url 'search_sender' %}");
+
+    // راننده → علاوه بر انتخاب، شماره پلاک را هم در vehicle-plate پر کند
+    enableSearch("driver-input", "driver-results", "driver-id", "{% url 'search_driver' %}", {
+        fillPlateField: "vehicle-plate"
+    });
+
+    enableSearch("vehicle-input", "vehicle-results", "vehicle-id", "{% url 'search_vehicle' %}");
+});
+</script>
+
+
     </body>
     </html>
 {% endblock %}
