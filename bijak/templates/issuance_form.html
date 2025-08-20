@@ -13,6 +13,71 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
         <link rel="stylesheet" href="/static/style.css">
 
+        <style>
+        .plate {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border: 3px solid black;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-weight: bold;
+            direction: rtl;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+        }
+
+        /* بخش پرچم و IR */
+        .flag-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-left: 2px solid black;
+            padding: 5px;
+            margin-left: 8px;
+            background: white;
+        }
+
+        .flag-box img {
+            width: 40px;
+            height: auto;
+            border: 1px solid black;
+        }
+
+        .flag-box span {
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        /* بخش شماره وسط */
+        .number-box {
+            display: flex;
+            align-items: center;
+            font-size: 32px;
+            margin: 0 10px;
+        }
+
+        .number-box span {
+            margin: 0 3px;
+        }
+
+        .letter {
+            font-size: 34px;
+            margin: 0 5px;
+        }
+
+        /* بخش استان */
+        .province {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 2px solid black;
+            padding: 0 8px;
+            font-size: 20px;
+        }
+</style>
+
     </head>
     <body>
     <div class="container">
@@ -140,7 +205,34 @@
                                 <div class="text-center col-md-10">
 
 {#                                    <label for="vehicle-plate">شماره پلاک</label>#}
-                                        <input type="text" id="vehicle-plate" name="vehicle_plate" class="form-control" placeholder="شماره پلاک راننده">
+
+{#                                        <input type="text" id="vehicle-plate" name="vehicle_plate" class="form-control" placeholder="شماره پلاک راننده">#}
+
+                                                <div class="plate">
+
+                                                <!-- استان -->
+            <div class="province">
+                <span>ایران</span>
+                <span id="province">{{ vehicle.license_plate_series }}</span>
+            </div>
+            <!-- پرچم ایران -->
+            <div class="flag-box">
+
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/Flag_of_Iran.svg" alt="Iran Flag">
+                <span>I.R. IRAN</span>
+            </div>
+
+            <!-- اعداد و حرف پلاک -->
+            <div class="number-box">
+                            <span id="second-number">{{ vehicle.license_plate_three_digit }}</span>
+                <span class="letter" id="letter">{{ vehicle.license_plate_alphabet }}</span>
+
+                <span id="first-number">{{ vehicle.license_plate_two_digit }}</span>
+            </div>
+
+
+        </div>
+
 
 
                                     {#                                    <input type="text" id="driver-input" placeholder="نام راننده را انتخاب کنید...">#}
@@ -274,6 +366,24 @@ function enableSearch(inputId, resultsId, hiddenId, searchUrl, extraOptions = {}
 
         $(`#${inputId}`).val(name);
         $(`#${hiddenId}`).val(id);
+
+        $.ajax({
+    url: "{% url 'get_vehicle_by_driver' %}",
+    data: { driver_id: id },
+    success: function(res){
+        if(res.success){
+            $("#first-number").text(res.vehicle.two_digit);
+            $("#letter").text(res.vehicle.alphabet);
+            $("#second-number").text(res.vehicle.three_digit);
+            $("#province").text(res.vehicle.series);
+        } else {
+            $("#first-number").text("--");
+            $("#letter").text("-");
+            $("#second-number").text("---");
+            $("#province").text("--");
+        }
+    }
+});
 
         // اگر extraOptions برای راننده بود → پلاک رو هم ست کن
         if(extraOptions.fillPlateField && plate !== undefined){

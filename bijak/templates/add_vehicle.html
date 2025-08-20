@@ -5,93 +5,62 @@
     <title>افزودن خودرو جدید</title>
     <style>
         body {
-            font-family: sans-serif;
-            direction: rtl;
-            margin: 50px;
+            font-family: Tahoma, sans-serif;
+            background: #f1f1f1;
+            padding: 20px;
         }
 
-        .form-box {
-            max-width: 600px;
-            margin: auto;
+        form {
+            background: #fff;
             padding: 20px;
-            border: 1px solid #ccc;
             border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            margin: auto;
         }
 
         label {
             display: block;
-            margin-top: 10px;
+            margin: 10px 0 5px;
         }
 
-        input, textarea {
+        input, select {
             width: 100%;
             padding: 8px;
-            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
         }
 
         button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #28a745;
-            color: #fff;
+            margin-top: 15px;
+            width: 100%;
+            padding: 10px;
+            background: #1976d2;
             border: none;
+            color: white;
             border-radius: 5px;
             cursor: pointer;
         }
 
-        body {
-            font-family: Vazirmatn, sans-serif;
-            direction: rtl;
-            padding: 30px;
-            background: #f7f7f7;
-        }
-
-        input, button {
-            padding: 10px;
-            margin: 5px 0;
-            font-size: 16px;
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            background: #fff;
-            font-size: 18px;
-        }
-
-        .plate {
-            display: inline-block;
-            padding: 10px 15px;
-            border: 2px solid #000;
-            border-radius: 6px;
-            background: #fefefe;
-            font-weight: bold;
-            font-size: 22px;
-            letter-spacing: 3px;
-        }
-
-        .iran {
-            display: inline-block;
-            margin-right: 10px;
-            font-size: 16px;
-            color: #0d47a1;
-            font-weight: bold;
+        button:hover {
+            background: #0d47a1;
         }
     </style>
 </head>
 <body>
 <div class="form-box">
-    <h2>ثبت خودرو جدید</h2>
+    <h2 style="text-align:center;">فرم ثبت خودرو</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
+        <button type="submit">ثبت</button>
         <button type="button" onclick="parsePlate()">نمایش پلاک</button>
-        <button type="submit">ذخیره</button>
-        <div class="result" id="result"></div>
+
 
     </form>
 </div>
+
+
 {##}
 {#<h2>ورود شماره پلاک خودرو</h2>#}
 {#<p>مثال: <strong>12الف34567</strong></p>#}
@@ -116,7 +85,7 @@
              font-weight:bold;font-size:22px;letter-spacing:3px;">
           ${license_plate_three_digit} - ${license_plate_alphabet} - ${license_plate_two_digit}
           <span style="margin-right:10px;font-size:16px;
-                color:#0d47a1;font-weight:bold;">${license_plate_series} ایران </span>
+                color:#0d47a1;font-weight:bold;"> ایران </span>
         </div>
       `;
         } else {

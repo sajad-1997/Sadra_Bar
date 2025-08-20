@@ -16,5 +16,6 @@ urlpatterns = [
     path('search/driver/', views.search_driver, name='search_driver'),
     path('search/vehicle/', views.search_vehicle, name='search_vehicle'),
     path('ajax/search-keyboard/', views.search_receiver, name='search_receiver_keyboard'),
+    path("ajax/get-vehicle/", views.get_vehicle_by_driver, name="get_vehicle_by_driver"),
 
 ]

@@ -29,7 +29,15 @@ class DriverForm(forms.ModelForm):
 class VehicleForm(forms.ModelForm):
     class Meta:
         model = Vehicle
-        fields = '__all__'
+        fields = ["driver", "type", "license_plate_three_digit", "license_plate_alphabet", "license_plate_two_digit", "license_plate_series"]
+        labels = {
+            "driver": "راننده",
+            "type": "نوع وسیله",
+            "license_plate_three_digit": "سه رقم پلاک",
+            "license_plate_alphabet": "حرف پلاک",
+            "license_plate_two_digit": "دو رقم پلاک",
+            "license_plate_series": "سری پلاک",
+        }
 
 
 class CarPlateForm(forms.Form):

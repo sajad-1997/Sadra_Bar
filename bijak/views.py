@@ -146,11 +146,28 @@ def add_driver(request):
 
 
 def add_vehicle(request):
-    if request.method == 'POST':
-        form = CarPlateForm(request.POST)
+    if request.method == "POST":
+        form = VehicleForm(request.POST)
         if form.is_valid():
             form.save()
+            # vehicle = form.save()
+            # return redirect("show_plate", vehicle_id=vehicle.id)
             return redirect('form')  # بازگشت به فرم بارنامه
     else:
-        form = CarPlateForm()
-    return render(request, 'add_vehicle.html', {'form': form})
+        form = VehicleForm()
+    return render(request, "add_vehicle.html", {"form": form})
+
+
+def get_vehicle_by_driver(request):
+    driver_id = request.GET.get("driver_id")
+    try:
+        vehicle = Vehicle.objects.get(driver_id=driver_id)
+        data = {
+            "two_digit": vehicle.license_plate_two_digit,
+            "alphabet": vehicle.license_plate_alphabet,
+            "three_digit": vehicle.license_plate_three_digit,
+            "series": vehicle.license_plate_series,
+        }
+        return JsonResponse({"success": True, "vehicle": data})
+    except Vehicle.DoesNotExist:
+        return JsonResponse({"success": False, "error": "وسیله‌ای برای این راننده پیدا نشد"})
