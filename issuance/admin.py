@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Sender, Receiver, Driver, Vehicle, BijakForm
+from .models import Sender, Receiver, Driver, Vehicle, Bijak
 import django_jalali.admin as jadmin
 
 
@@ -27,4 +27,4 @@ admin.site.register(Sender, SenderAdmin)
 admin.site.register(Receiver, ReceiverAdmin)
 admin.site.register(Driver, DriverAdmin)
 admin.site.register(Vehicle, VehicleAdmin)
-admin.site.register(BijakForm, BijakAdmin)
+admin.site.register(Bijak, BijakAdmin)

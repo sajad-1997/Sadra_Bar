@@ -1,53 +1,54 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.http import JsonResponse
-from .models import Receiver, Sender, Driver, Vehicle
-from .forms import SenderForm, ReceiverForm, DriverForm, VehicleForm, CargoForm, ShipmentForm, CarPlateForm
+from .models import Receiver, Sender, Driver, Vehicle, Bijak
+from .forms import SenderForm, ReceiverForm, DriverForm, VehicleForm, CargoForm, ShipmentForm
+from django.db.models import Q
 
 
-def create_all_forms(request):
-    receivers = Receiver.objects.all()
-
+def create_new(request):
     if request.method == 'POST':
-        sender_form = SenderForm(request.POST, prefix='sender')
-        receiver_form = ReceiverForm(request.POST, prefix='receiver')
+        sender_id = request.POST.get("sender")
+        receiver_id = request.POST.get("receiver")
+        driver_id = request.POST.get("driver")
+
         cargo_form = CargoForm(request.POST, prefix='cargo')
-        driver_form = DriverForm(request.POST, prefix='driver')
-        vehicle_form = VehicleForm(request.POST, prefix='vehicle')
         shipment_form = ShipmentForm(request.POST, prefix='shipment')
 
-        if all([sender_form.is_valid(), receiver_form.is_valid(), cargo_form.is_valid(), driver_form.is_valid(),
-                vehicle_form.is_valid(), shipment_form.is_valid()]):
-            sender = sender_form.save()
-            receiver = receiver_form.save()
-            cargo = cargo_form.save()
-            driver = driver_form.save()
-            vehicle = vehicle_form.save(commit=False)
-            vehicle.driver = driver
-            vehicle.save()
+        if cargo_form.is_valid() and shipment_form.is_valid():
+            # احراز موجودیت فرستنده/گیرنده/راننده
+            try:
+                sender = get_object_or_404(Sender, id=sender_id)
+                receiver = get_object_or_404(Receiver, id=receiver_id)
+                driver = get_object_or_404(Driver, id=driver_id)
+            except Exception:
+                messages.error(request, "فرستنده، گیرنده یا راننده معتبر نیستند.")
+                return redirect('create_new')
 
+            # تلاش برای یافتن خودروِ متعلق به راننده (اختیاری)
+            # اگر ForeignKey از Vehicle به Driver دارید:
+            vehicle = Vehicle.objects.filter(driver_id=driver.id).order_by('-id').first()
+            # اگر related_name سفارشی دارید (مثلاً driver.vehicles)، خط بالا کافی است و نیازی به driver.vehicle نیست.
+
+            # ذخیره‌سازی
+            cargo = cargo_form.save()
             shipment = shipment_form.save(commit=False)
             shipment.sender = sender
             shipment.receiver = receiver
             shipment.cargo = cargo
             shipment.driver = driver
-            shipment.vehicle = vehicle
+            if vehicle:  # فقط اگر ماشین یافت شد ست می‌کنیم
+                shipment.vehicle = vehicle
             shipment.save()
+
+            messages.success(request, "بیجک با موفقیت ثبت شد.")
             return redirect('success')
     else:
-        sender_form = SenderForm(prefix='sender')
-        receiver_form = ReceiverForm(prefix='receiver')
         cargo_form = CargoForm(prefix='cargo')
-        driver_form = DriverForm(prefix='driver')
-        vehicle_form = VehicleForm(prefix='vehicle')
         shipment_form = ShipmentForm(prefix='shipment')
 
     return render(request, 'issuance_form.html', {
-        'sender_form': sender_form,
-        'receiver_form': receiver_form,
-        'receivers': receivers,
         'cargo_form': cargo_form,
-        'driver_form': driver_form,
-        'vehicle_form': vehicle_form,
         'shipment_form': shipment_form
     })
 
@@ -139,7 +140,7 @@ def add_driver(request):
         form = DriverForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('form')  # بازگشت به فرم بارنامه
+            return redirect('add_vehicle')  # بازگشت به فرم بارنامه
     else:
         form = DriverForm()
     return render(request, 'add_driver.html', {'form': form})

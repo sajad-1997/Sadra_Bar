@@ -1,61 +1,97 @@
 from django import forms
 from jalali_date.fields import JalaliDateField
 from jalali_date.widgets import AdminJalaliDateWidget
-from .models import Sender, Receiver, Driver, Vehicle, Cargo, BijakForm
+from .models import Sender, Receiver, Driver, Vehicle, Cargo, Bijak
+import jdatetime
+from jdatetime import date
 
 
-class SenderForm(forms.ModelForm):
+# 🔹 تابع تبدیل اعداد فارسی به انگلیسی
+def persian_to_english_numbers(value: str) -> str:
+    persian_digits = "۰۱۲۳۴۵۶۷۸۹"
+    english_digits = "0123456789"
+    trans_table = str.maketrans(persian_digits, english_digits)
+    return value.translate(trans_table)
+
+
+# 🔹 کلاس پایه برای فرم‌ها (اعمال فقط روی فیلدهای مشخص عددی)
+class PersianNumberFormMixin:
+    numeric_fields = []  # لیست فیلدهایی که باید تبدیل شوند
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for field in self.numeric_fields:
+            value = cleaned_data.get(field)
+            if isinstance(value, str):
+                cleaned_data[field] = persian_to_english_numbers(value)
+        return cleaned_data
+
+
+def persian_to_gregorian(jalali_str):
+    # فرض می‌کنیم ورودی کاربر: ۱۴۰۳/۰۶/۰۱
+    jalali_str = persian_to_english_numbers(jalali_str)  # تبدیل اعداد
+    year, month, day = map(int, jalali_str.split('/'))
+    g_date = jdatetime.date(year, month, day).togregorian()
+    return g_date
+
+
+class SenderForm(PersianNumberFormMixin, forms.ModelForm):
+    numeric_fields = ['national_id', 'postal', 'phone']
+
     class Meta:
         model = Sender
         fields = '__all__'
 
 
-class ReceiverForm(forms.ModelForm):
+class ReceiverForm(PersianNumberFormMixin, forms.ModelForm):
+    numeric_fields = ['national_id', 'postal', 'phone']
+
     class Meta:
         model = Receiver
         fields = '__all__'
 
 
-class DriverForm(forms.ModelForm):
+class DriverForm(PersianNumberFormMixin, forms.ModelForm):
+    numeric_fields = ['national_id', 'birth_date', 'phone', 'phone2', 'certificate', 'certificate_date']
+
     class Meta:
         model = Driver
         fields = '__all__'
-        widgets = {
-            'birth_date': forms.TextInput(attrs={'class': 'persian-date-picker'}),
-            'license_issue_date': forms.TextInput(attrs={'class': 'persian-date-picker'}),
-        }
+
+    def clean_birth_date(self):
+        data = self.cleaned_data['birth_date']
+        if isinstance(data, str):
+            return persian_to_gregorian(data)
+        return data
+
+    def clean_certificate_date(self):
+        data = self.cleaned_data['certificate_date']
+        if isinstance(data, str):
+            return persian_to_gregorian(data)
+        return data
 
 
-class VehicleForm(forms.ModelForm):
+class VehicleForm(PersianNumberFormMixin, forms.ModelForm):
+    numeric_fields = ['license_plate_three_digit', 'license_plate_two_digit', 'license_plate_series']
+
     class Meta:
         model = Vehicle
-        fields = ["driver", "type", "license_plate_three_digit", "license_plate_alphabet", "license_plate_two_digit", "license_plate_series"]
-        labels = {
-            "driver": "راننده",
-            "type": "نوع وسیله",
-            "license_plate_three_digit": "سه رقم پلاک",
-            "license_plate_alphabet": "حرف پلاک",
-            "license_plate_two_digit": "دو رقم پلاک",
-            "license_plate_series": "سری پلاک",
-        }
+        fields = '__all__'
 
 
-class CarPlateForm(forms.Form):
-    part1 = forms.CharField(max_length=2, label="عدد اول")
-    letter = forms.CharField(max_length=1, label="حرف پلاک")
-    part2 = forms.CharField(max_length=3, label="عدد وسط")
-    province = forms.CharField(max_length=2, label="کد استان")
+class CargoForm(PersianNumberFormMixin, forms.ModelForm):
+    numeric_fields = ['weight', 'number_of_packaging']
 
-
-class CargoForm(forms.ModelForm):
     class Meta:
         model = Cargo
         fields = '__all__'
 
 
-class ShipmentForm(forms.ModelForm):
+class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
+    numeric_fields = ['tracking_code', 'issuance_date', 'value', 'insurance', 'loading_fee', ]
+
     class Meta:
-        model = BijakForm
+        model = Bijak
         fields = 'tracking_code', 'issuance_date', 'value', 'origin', 'destination', 'insurance', 'loading_fee'
 
     def __int__(self, *args, **kwargs):
@@ -63,9 +99,9 @@ class ShipmentForm(forms.ModelForm):
         self.fields['issuance_date'] = JalaliDateField(label=('تاریخ صدور'),
                                                        widget=AdminJalaliDateWidget)
 
-# class BijakForm(forms.ModelForm):
+# class Bijak(forms.ModelForm):
 #     class Meta:
-#         model = BijakForm
+#         model = Bijak
 #         fields = 'tracking_code', 'issuance_date', 'value', 'origin', 'destination', 'insurance', 'loading_fee'
 #         widgets = {
 #             'issuance_date': forms.TextInput(attrs={
@@ -73,7 +109,7 @@ class ShipmentForm(forms.ModelForm):
 #                 'placeholder': 'تاریخ را انتخاب کنید'}),
 #         }
 
-# class BijakForm(forms.ModelForm):
+# class Bijak(forms.ModelForm):
 #     sender = forms.ModelChoiceField(
 #         queryset=Sender.objects.all(),
 #         widget=forms.Select(attrs={'class': 'form-control'}),
@@ -86,10 +122,10 @@ class ShipmentForm(forms.ModelForm):
 #     )
 #
 #     class Meta:
-#         model = BijakForm
+#         model = Bijak
 #         fields = 'tracking_code', 'issuance_date', 'value', 'origin', 'destination', 'insurance', 'loading_fee'
 
-# class BijakForm(forms.ModelForm):
+# class Bijak(forms.ModelForm):
 #     sender = forms.ModelChoiceField(
 #         queryset=Sender.objects.all(),
 #         empty_label="-- انتخاب فرستنده --",
@@ -112,7 +148,7 @@ class ShipmentForm(forms.ModelForm):
 #     )
 #
 #     class Meta:
-#         model = BijakForm
+#         model = Bijak
 #         fields = ['tracking_code', 'issuance_date', 'value', 'origin', 'destination', 'insurance', 'loading_fee']
 #     widgets = {
 #         'issuance_date': forms.TextInput(attrs={'class': 'persian-date-picker'}),

@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>افزودن خودرو جدید</title>
+    <title>افزودن اطلاعات خودرو راننده</title>
     <style>
         body {
             font-family: Tahoma, sans-serif;
@@ -49,11 +49,11 @@
 </head>
 <body>
 <div class="form-box">
-    <h2 style="text-align:center;">فرم ثبت خودرو</h2>
+    <h2 style="text-align:center;">فرم ثبت اطلاعات خودرو</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">ثبت</button>
+        <button type="submit">ذخیره و ثبت نهایی</button>
         <button type="button" onclick="parsePlate()">نمایش پلاک</button>
 
 

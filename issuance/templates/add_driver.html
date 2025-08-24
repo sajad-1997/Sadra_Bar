@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>افزودن فرستنده جدید</title>
+    <title>افزودن راننده جدید</title>
     <style>
         body {
             font-family: sans-serif;
@@ -42,11 +42,11 @@
 </head>
 <body>
 <div class="form-box">
-    <h2>ثبت فرستنده جدید</h2>
+    <h2>ثبت اطلاعات راننده جدید</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">ذخیره</button>
+        <button type="submit">ذخیره و ثبت پلاک راننده</button>
     </form>
 </div>
 </body>
