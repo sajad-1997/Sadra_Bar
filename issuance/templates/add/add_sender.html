@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ویرایش فرستنده</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            direction: rtl;
+            margin: 50px;
+        }
+
+        .form-box {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h3>جستجو / ثبت فرستنده</h3>
+
+<form id="sender-form">
+    <input type="hidden" id="sender-id" name="id">
+
+    <div class="mb-3">
+        <label>نام فرستنده:</label>
+        <input type="text" id="sender-input" name="name" class="form-control">
+        <div id="sender-results" class="list-group"
+             style="display:none; position:absolute; z-index:1000; width:100%;"></div>
+    </div>
+
+    <div class="mb-3">
+        <label>تلفن:</label>
+        <input type="text" id="sender-phone" name="phone" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>آدرس:</label>
+        <input type="text" id="sender-address" name="address" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>کد ملی:</label>
+        <input type="text" id="sender-national" name="national_id" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>کد پستی:</label>
+        <input type="text" id="sender-postal" name="postal" class="form-control">
+    </div>
+
+    <button type="submit" class="btn btn-success">ذخیره</button>
+</form>
+
+<p id="msg"></p>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+    let selectedIndex = -1;
+
+    // جستجو
+    $("#sender-input").on("keyup", function(e){
+        let query = $(this).val().trim();
+
+        // اگر خالی شد → همه فیلدها رو پاک کن
+        if(query.length === 0){
+            clearForm("");
+            $("#sender-results").empty().hide();
+            selectedIndex = -1;
+            return;
+        }
+
+        // کنترل کلیدها
+        if(e.keyCode === 38){ if(selectedIndex > 0) selectedIndex--; highlightItem(); return; }
+        if(e.keyCode === 40){ if(selectedIndex < $("#sender-results .list-group-item").length - 1) selectedIndex++; highlightItem(); return; }
+        if(e.keyCode === 13){ e.preventDefault(); let selected = $("#sender-results .list-group-item").eq(selectedIndex); if(selected.length){ chooseItem(selected); } return; }
+
+        $.ajax({
+            url: "{% url 'search_sender' %}",
+            data: { q: query },
+            success: function(data){
+                let html = "";
+                if(data.results.length > 0){
+                    data.results.forEach(function(item){
+                        html += `<button type="button"
+                                    class="list-group-item list-group-item-action"
+                                    data-id="${item.id}"
+                                    data-name="${item.name}"
+                                    data-phone="${item.phone || ''}"
+                                    data-address="${item.address || ''}"
+                                    data-national="${item.national_id || ''}"
+                                    data-postal="${item.postal || ''}">
+                                    <strong>${item.name}</strong>
+                                    ${item.phone ? " - " + item.phone : ""}
+                                 </button>`;
+                    });
+                } else {
+                    clearForm(query); // نتیجه‌ای نبود → فرم خالی شه و فقط نام بمونه
+                    html = `<div class="list-group-item">نتیجه‌ای یافت نشد</div>`;
+                }
+                $("#sender-results").html(html).show();
+                selectedIndex = -1;
+            }
+        });
+    });
+
+    function highlightItem(){
+        $("#sender-results .list-group-item").removeClass("active");
+        if(selectedIndex >= 0){
+            $("#sender-results .list-group-item").eq(selectedIndex).addClass("active");
+        }
+    }
+
+    function chooseItem(item){
+        $("#sender-id").val(item.data("id"));
+        $("#sender-input").val(item.data("name"));
+        $("#sender-phone").val(item.data("phone"));
+        $("#sender-address").val(item.data("address"));
+        $("#sender-national").val(item.data("national"));
+        $("#sender-postal").val(item.data("postal"));
+        $("#sender-results").empty().hide();
+    }
+
+    // فرم خالی‌ساز
+    function clearForm(name=""){
+        $("#sender-id").val("");
+        $("#sender-input").val(name);
+        $("#sender-phone").val("");
+        $("#sender-address").val("");
+        $("#sender-national").val("");
+        $("#sender-postal").val("");
+    }
+
+    // انتخاب با کلیک
+    $(document).on("click", "#sender-results .list-group-item", function(){
+        chooseItem($(this));
+    });
+
+    // ذخیره اطلاعات
+    $("#sender-form").submit(function(e){
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'save_sender' %}",
+            type: "POST",
+            data: $(this).serialize(),
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            success: function(resp){
+                if(resp.success){
+                    $("#msg").text("با موفقیت ذخیره شد (ID: " + resp.id + ")");
+                } else {
+                    $("#msg").text("خطا: " + resp.error);
+                }
+            },
+            error: function(){
+                $("#msg").text("مشکلی در ارتباط با سرور پیش آمد");
+            }
+        });
+    });
+});
+</script>
+
+
+</body>
+</html>

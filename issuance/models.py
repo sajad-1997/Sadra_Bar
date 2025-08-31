@@ -3,22 +3,22 @@ from django_jalali.db import models as jmodels
 
 
 class Sender(models.Model):
-    name = models.CharField(max_length=20, verbose_name="نام و نام خانوادگی فرستنده")
+    name = models.CharField(max_length=50, verbose_name="نام و نام خانوادگی فرستنده")
     national_id = models.CharField(max_length=50, unique=True, verbose_name="شناسه یا کد ملی", blank=True, null=True)
     postal = models.CharField(max_length=10, verbose_name="کد پستی", blank=True, null=True)
     phone = models.CharField(max_length=11, verbose_name="تلفن", blank=True, null=True)
-    address = models.TextField(verbose_name="آدرس")
+    address = models.TextField(verbose_name="آدرس", blank=True, null=True)
 
     def __str__(self):
         return self.name
 
 
 class Receiver(models.Model):
-    name = models.CharField(max_length=20, verbose_name="نام و نام خانوادگی گیرنده")
+    name = models.CharField(max_length=50, verbose_name="نام و نام خانوادگی گیرنده")
     national_id = models.CharField(max_length=50, unique=True, verbose_name="شناسه یا کد ملی", blank=True)
     postal = models.CharField(max_length=10, verbose_name="کد پستی", blank=True)
     phone = models.CharField(max_length=11, verbose_name="تلفن", blank=True)
-    address = models.TextField(verbose_name="آدرس")
+    address = models.TextField(verbose_name="آدرس", blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -70,10 +70,11 @@ class Bijak(models.Model):
     destination = models.CharField(max_length=50, verbose_name="مقصد تخلیه")
     insurance = models.CharField(max_length=100, verbose_name="مبلغ بیمه")
     loading_fee = models.CharField(max_length=10, verbose_name="هزینه خدمات", blank=True)
-    sender = models.ForeignKey(Sender, on_delete=models.CASCADE)
-    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE)
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    sender = models.ForeignKey(Sender, on_delete=models.CASCADE, related_name='فرستنده')
+    receiver = models.ForeignKey(Receiver, on_delete=models.CASCADE, related_name='گیرنده')
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='راننده')
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='خودرو')
+    cargo = models.ForeignKey(Cargo, on_delete=models.CASCADE, related_name='محموله')
 
     def __str__(self):
         return self.issuance_date

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="container mt-6">
+        <h2>جستجوی بارنامه‌ها</h2>
+        <form method="get" class="form-inline mb-3">
+            <input type="text" name="q" value="{{ query }}" class="form-control"
+                   placeholder="جستجو بر اساس نام یا شماره بارنامه...">
+            <button type="submit" class="btn btn-primary ml-2">جستجو</button>
+        </form>
+
+        {% if shipments %}
+            <table class="table table-bordered table-striped text-center">
+                <thead class="thead-dark">
+                <tr>
+                    <th>ردیف</th>
+                    <th>شماره بارنامه</th>
+                    <th>تاریخ</th>
+                    <th>فرستنده</th>
+                    <th>گیرنده</th>
+                    <th>راننده</th>
+                    <th>شماره پلاک</th>
+                    <th>نوع بار</th>
+                    <th>ارزش محموله</th>
+                    <th>مبداء</th>
+                    <th>مقصد</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for s in shipments %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ s.tracking_code }}</td>
+{#                        <td>{{ s.issuance_date|date:"Y/m/d H:i" }}</td>#}
+                        <td>{{ s.issuance_date }}</td>
+                        <td>{{ s.sender.name }}</td>
+                        <td>{{ s.receiver.name }}</td>
+                        <td>{{ s.driver.name }}</td>
+                        <td>
+                            {{ s.vehicle.license_plate_two_digit }}
+                            {{ s.vehicle.license_plate_alphabet }}
+                            {{ s.vehicle.license_plate_three_digit }}
+                            ایران {{ s.vehicle.license_plate_series }}
+                        </td>
+                        <td>{{ s.cargo.name }}</td>
+                        <td>{{ s.value }}</td>
+                        <td>{{ s.origin }}</td>
+                        <td>{{ s.destination }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-warning">هیچ بارنامه‌ای مطابق با جستجو یافت نشد.</div>
+        {% endif %}
+    </div>
+
+{% endblock %}
