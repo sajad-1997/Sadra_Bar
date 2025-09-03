@@ -1,7 +1,7 @@
 from django import forms
 from jalali_date.fields import JalaliDateField
 from jalali_date.widgets import AdminJalaliDateWidget
-from .models import Sender, Receiver, Driver, Vehicle, Cargo, Bijak
+from .models import Customer, Driver, Vehicle, Cargo, Bijak
 import jdatetime
 from jdatetime import date
 
@@ -35,19 +35,11 @@ def persian_to_gregorian(jalali_str):
     return g_date
 
 
-class SenderForm(PersianNumberFormMixin, forms.ModelForm):
+class CustomerForm(PersianNumberFormMixin, forms.ModelForm):
     numeric_fields = ['national_id', 'postal', 'phone']
 
     class Meta:
-        model = Sender
-        fields = '__all__'
-
-
-class ReceiverForm(PersianNumberFormMixin, forms.ModelForm):
-    numeric_fields = ['national_id', 'postal', 'phone']
-
-    class Meta:
-        model = Receiver
+        model = Customer
         fields = '__all__'
 
 
@@ -80,7 +72,7 @@ class VehicleForm(PersianNumberFormMixin, forms.ModelForm):
 
 
 class CargoForm(PersianNumberFormMixin, forms.ModelForm):
-    numeric_fields = ['weight', 'number_of_packaging']
+    numeric_fields = ['weight', 'number_of_packaging', ]
 
     class Meta:
         model = Cargo
@@ -88,11 +80,11 @@ class CargoForm(PersianNumberFormMixin, forms.ModelForm):
 
 
 class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
-    numeric_fields = ['tracking_code', 'issuance_date', 'value', 'insurance', 'loading_fee', ]
+    numeric_fields = ['tracking_code', 'issuance_date', 'value', 'insurance', 'loading_fee', 'freight']
 
     class Meta:
         model = Bijak
-        fields = 'tracking_code', 'issuance_date', 'value', 'origin', 'destination', 'insurance', 'loading_fee'
+        fields = 'tracking_code', 'issuance_date', 'value', 'insurance', 'loading_fee', 'freight'
 
     def __int__(self, *args, **kwargs):
         super(ShipmentForm, self).__init__(*args, **kwargs)

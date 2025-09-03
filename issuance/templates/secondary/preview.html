@@ -11,25 +11,30 @@
             font-family: "Vazirmatn", "Tahoma", sans-serif;
             background-color: #f8f9fa;
         }
+
         .bijak-card {
             background: #fff;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
             margin-bottom: 20px;
         }
+
         .bijak-header {
             background: linear-gradient(135deg, #007bff, #0056b3);
             color: white;
             padding: 12px;
             border-radius: 12px 12px 0 0;
         }
+
         .table th {
             background-color: #f1f3f5;
             text-align: center;
         }
+
         .table td {
             vertical-align: middle;
         }
+
         .section-title {
             font-weight: bold;
             margin: 15px 0 8px;
@@ -46,8 +51,8 @@
     <!-- کارت اصلی بیجک -->
     <div class="bijak-card">
         <div class="bijak-header d-flex justify-content-between align-items-center">
-            <h4 class="m-0">پیش‌نمایش بیجک</h4>
             <span>کد رهگیری: {{ bijak.tracking_code }}</span>
+            <h4 class="m-0">پیش نمایش بیجک</h4>
         </div>
         <div class="p-4">
 
@@ -56,6 +61,7 @@
             <table class="table table-bordered text-center">
                 <tr>
                     <th>تاریخ صدور</th>
+                    <th>مبلغ کرایه</th>
                     <th>ارزش محموله</th>
                     <th>مبدا بارگیری</th>
                     <th>مقصد تخلیه</th>
@@ -64,11 +70,12 @@
                 </tr>
                 <tr>
                     <td>{{ bijak.issuance_date }}</td>
-                    <td>{{ bijak.value|default:"—" }}</td>
-                    <td>{{ bijak.origin|default:"—" }}</td>
-                    <td>{{ bijak.destination }}</td>
-                    <td>{{ bijak.insurance }}</td>
-                    <td>{{ bijak.loading_fee|default:"—" }}</td>
+                    <td>{{ bijak.freight }} <strong>ریال</strong></td>
+                    <td>{{ bijak.value }} <strong>ریال</strong></td>
+                    <td>{{ bijak.cargo.origin }}</td>
+                    <td>{{ bijak.cargo.destination }}</td>
+                    <td>{{ bijak.insurance }} <strong>ریال</strong></td>
+                    <td>{{ bijak.loading_fee }} <strong>ریال</strong></td>
                 </tr>
             </table>
 
@@ -77,12 +84,14 @@
             <table class="table table-bordered">
                 <tr>
                     <th>نام و نام خانوادگی</th>
-                    <th>کد ملی</th>
+                    <th>شناسه/کد ملی</th>
+                    <th>کد پستی</th>
                     <th>آدرس</th>
                 </tr>
                 <tr>
-                    <td>{{ bijak.sender.first_name }} {{ bijak.sender.last_name }}</td>
+                    <td>{{ bijak.sender.name }}</td>
                     <td>{{ bijak.sender.national_id }}</td>
+                    <td>{{ bijak.sender.postal }}</td>
                     <td>{{ bijak.sender.address }}</td>
                 </tr>
             </table>
@@ -92,12 +101,14 @@
             <table class="table table-bordered">
                 <tr>
                     <th>نام و نام خانوادگی</th>
-                    <th>کد ملی</th>
+                    <th>شناسه/کد ملی</th>
+                    <th>کد پستی</th>
                     <th>آدرس</th>
                 </tr>
                 <tr>
-                    <td>{{ bijak.receiver.first_name }} {{ bijak.receiver.last_name }}</td>
+                    <td>{{ bijak.receiver.name }}</td>
                     <td>{{ bijak.receiver.national_id }}</td>
+                    <td>{{ bijak.receiver.postal }}</td>
                     <td>{{ bijak.receiver.address }}</td>
                 </tr>
             </table>
@@ -112,16 +123,18 @@
                     <th>شماره گواهی‌نامه</th>
                     <th>تاریخ صدور</th>
                     <th>موبایل</th>
-                    <th>تلفن منزل</th>
+                    <th>تلفن دوم</th>
+                    <th>آدرس منزل</th>
                 </tr>
                 <tr>
-                    <td>{{ bijak.driver.first_name }} {{ bijak.driver.last_name }}</td>
+                    <td>{{ bijak.driver.name }}</td>
                     <td>{{ bijak.driver.national_id }}</td>
                     <td>{{ bijak.driver.birth_date }}</td>
-                    <td>{{ bijak.driver.license_number }}</td>
-                    <td>{{ bijak.driver.license_issue_date }}</td>
+                    <td>{{ bijak.driver.certificate }}</td>
+                    <td>{{ bijak.driver.certificate_date }}</td>
                     <td>{{ bijak.driver.phone }}</td>
-                    <td>{{ bijak.driver.home_phone }}</td>
+                    <td>{{ bijak.driver.phone2 }}</td>
+                    <td>{{ bijak.driver.address }}</td>
                 </tr>
             </table>
 
@@ -130,11 +143,17 @@
             <table class="table table-bordered text-center">
                 <tr>
                     <th>شماره پلاک</th>
+                    <th>نوع وسیله</th>
                     <th>راننده</th>
                 </tr>
                 <tr>
-                    <td>{{ bijak.vehicle.plate_number }}</td>
-                    <td>{{ bijak.vehicle.driver.first_name }} {{ bijak.vehicle.driver.last_name }}</td>
+                    <td>
+                        {{ bijak.vehicle.license_plate_two_digit }} <strong> </strong>
+                        {{ bijak.vehicle.license_plate_alphabet }} <strong> </strong>
+                        {{ bijak.vehicle.license_plate_three_digit }}<strong> ایران</strong>
+                        {{ bijak.vehicle.license_plate_series }}</td>
+                    <td>{{ bijak.vehicle.type }}</td>
+                    <td>{{ bijak.vehicle.driver.name }}</td>
                 </tr>
             </table>
 
@@ -144,10 +163,14 @@
                 <tr>
                     <th>شرح محموله</th>
                     <th>وزن</th>
+                    <th>نوع بسته بندی</th>
+                    <th>تعداد بسته</th>
                 </tr>
                 <tr>
-                    <td>{{ bijak.cargo.description }}</td>
+                    <td>{{ bijak.cargo.name }}</td>
                     <td>{{ bijak.cargo.weight }}</td>
+                    <td>{{ bijak.cargo.package_type }}</td>
+                    <td>{{ bijak.cargo.number_of_packaging }}</td>
                 </tr>
             </table>
 

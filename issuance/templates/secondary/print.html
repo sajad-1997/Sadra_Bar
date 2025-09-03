@@ -108,11 +108,11 @@
           <div class="section-card">
             <div class="section-title">
               <span>گیرنده</span>
-              <a href="{% url 'edit_receiver' %}" class="btn btn-sm btn-outline-primary">ویرایش</a>
+              <a href="{% url 'edit_customer' %}" class="btn btn-sm btn-outline-primary">ویرایش</a>
             </div>
-            <div class="kv"><span class="k">نام:</span> <span class="v">{{ shipment.receiver.first_name }} {{ shipment.receiver.last_name }}</span></div>
-            <div class="kv"><span class="k">کد ملی:</span> <span class="v">{{ shipment.receiver.national_id|default:"—" }}</span></div>
-            <div class="kv"><span class="k">آدرس:</span> <span class="v">{{ shipment.receiver.address|default:"—" }}</span></div>
+            <div class="kv"><span class="k">نام:</span> <span class="v">{{ shipment.Customer.first_name }} {{ shipment.Customer.last_name }}</span></div>
+            <div class="kv"><span class="k">کد ملی:</span> <span class="v">{{ shipment.Customer.national_id|default:"—" }}</span></div>
+            <div class="kv"><span class="k">آدرس:</span> <span class="v">{{ shipment.Customer.address|default:"—" }}</span></div>
           </div>
         </div>
       </div>
@@ -255,17 +255,17 @@
 {#            right: 670px;#}
 {#        }#}
 {##}
-{#        .receiver_name {#}
+{#        .Customer_name {#}
 {#            top: 95px;#}
 {#            right: 160px;#}
 {#        }#}
 {##}
-{#        .receiver_national {#}
+{#        .Customer_national {#}
 {#            top: 95px;#}
 {#            right: 10px;#}
 {#        }#}
 {##}
-{#        .receiver_address {#}
+{#        .Customer_address {#}
 {#            top: 135px;#}
 {#            right: 160px;#}
 {#        }#}
@@ -349,9 +349,9 @@
 {#    <div class="field sender_national">{{ shipment.sender.national_id }}</div>#}
 {#    <div class="field sender_address">{{ shipment.sender.address }}</div>#}
 {##}
-{#    <div class="field receiver_name">{{ shipment.receiver.name }}</div>#}
-{#    <div class="field receiver_national">{{ shipment.receiver.national_id }}</div>#}
-{#    <div class="field receiver_address">{{ shipment.receiver.address }}</div>#}
+{#    <div class="field Customer_name">{{ shipment.Customer.name }}</div>#}
+{#    <div class="field Customer_national">{{ shipment.Customer.national_id }}</div>#}
+{#    <div class="field Customer_address">{{ shipment.Customer.address }}</div>#}
 {##}
 {#    <div class="field driver_name">{{ shipment.driver.name }}</div>#}
 {#    <div class="field driver_national">{{ shipment.driver.national_id }}</div>#}

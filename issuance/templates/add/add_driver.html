@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>افزودن راننده جدید</title>
+    <title>ویرایش اطلاعات راننده</title>
     <style>
         body {
             font-family: sans-serif;
@@ -41,13 +41,217 @@
     </style>
 </head>
 <body>
-<div class="form-box">
-    <h2>ثبت اطلاعات راننده جدید</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">ذخیره و ثبت پلاک راننده</button>
-    </form>
-</div>
+<h3>ویرایش / ثبت راننده</h3>
+
+<form id="driver-form">
+    <input type="hidden" id="driver-id" name="id">
+
+    <div class="mb-3">
+        <label>نام و نام خانوادگی:</label>
+        <input type="text" id="driver-input" name="name" class="form-control">
+        <div id="driver-results" class="list-group"
+             style="display:none; position:absolute; z-index:1000; width:100%;"></div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div class="mb-3">
+        <label>کد ملی:</label>
+        <input type="text" id="driver-national-id" name="national_id" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>شهر محل سکونت:</label>
+        <input type="text" id="driver-residence" name="residence" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>نام پدر:</label>
+        <input type="text" id="driver-father-name" name="father_name" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>تاریخ تولد:</label>
+        <input type="text" id="driver-birth-date" name="birth_date" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>تاریخ صدور گواهینامه:</label>
+        <input type="text" id="driver-certificate-date" name="certificate_date" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>شماره گواهینامه:</label>
+        <input type="text" id="driver-certificate" name="certificate" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>شماره تلفن راننده:</label>
+        <input type="text" id="driver-phone" name="phone" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>شماره تلفن دوم:</label>
+        <input type="text" id="driver-phone2" name="phone2" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>آدرس محل سکونت:</label>
+        <input type="text" id="driver-address" name="address" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>شماره پلاک خودرو:</label>
+        <input type="text" id="driver-plate" name="plate" class="form-control" readonly>
+    </div>
+
+    <button type="submit" class="btn btn-success">ذخیره</button>
+</form>
+
+<p id="msg"></p>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let selectedIndex = -1;
+
+        // جستجو
+        $("#driver-input").on("keyup", function (e) {
+            let query = $(this).val().trim();
+
+            // اگر خالی شد → همه فیلدها رو پاک کن
+            if (query.length === 0) {
+                clearForm("");
+                $("#driver-results").empty().hide();
+                selectedIndex = -1;
+                return;
+            }
+
+            // کنترل کلیدها
+            if (e.keyCode === 38) {
+                if (selectedIndex > 0) selectedIndex--;
+                highlightItem();
+                return;
+            }
+            if (e.keyCode === 40) {
+                if (selectedIndex < $("#driver-results .list-group-item").length - 1) selectedIndex++;
+                highlightItem();
+                return;
+            }
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                let selected = $("#driver-results .list-group-item").eq(selectedIndex);
+                if (selected.length) {
+                    chooseItem(selected);
+                }
+                return;
+            }
+
+            $.ajax({
+                url: "{% url 'search_driver' %}",
+                data: {q: query},
+                success: function (data) {
+                    let html = "";
+                    if (data.results.length > 0) {
+                        data.results.forEach(function (item) {
+                            html += `<button type="button"
+                                    class="list-group-item list-group-item-action"
+                                    data-id="${item.id}"
+                                    data-name="${item.name}"
+                                    data-national_id="${item.national_id || ''}"
+                                    data-residence="${item.residence || ''}"
+                                    data-father_name="${item.father_name || ''}"
+                                    data-birth-date="${item.birth_date || ''}"
+                                    data-certificate_date="${item.certificate_date || ''}"
+                                    data-certificate="${item.certificate || ''}"
+                                    data-phone="${item.phone || ''}"
+                                    data-phone2="${item.phone2 || ''}"
+                                    data-address="${item.address || ''}"
+                                    data-plate_number="${item.plate_number || ''}">
+                                    <strong>${item.name}</strong>
+                                    ${item.phone ? " - " + item.phone : ""}
+                                 </button>`;
+                        });
+                    } else {
+                        clearForm(query); // نتیجه‌ای نبود → فرم خالی شه و فقط نام بمونه
+                        html = `<div class="list-group-item">نتیجه‌ای یافت نشد</div>`;
+                    }
+                    $("#driver-results").html(html).show();
+                    selectedIndex = -1;
+                }
+            });
+        });
+
+        function highlightItem() {
+            $("#driver-results .list-group-item").removeClass("active");
+            if (selectedIndex >= 0) {
+                $("#driver-results .list-group-item").eq(selectedIndex).addClass("active");
+            }
+        }
+
+        function chooseItem(item) {
+            $("#driver-id").val(item.data("id"));
+            $("#driver-input").val(item.data("name"));
+            $("#driver-national-id").val(item.data("national_id"));
+            $("#driver-residence").val(item.data("residence"));
+            $("#driver-father-name").val(item.data("father_name"));
+            $("#driver-birth-date").val(item.data("birth_date"));
+            $("#driver-certificate-date").val(item.data("certificate_date"));
+            $("#driver-certificate").val(item.data("certificate"));
+            $("#driver-phone").val(item.data("phone"));
+            $("#driver-phone2").val(item.data("phone2"));
+            $("#driver-address").val(item.data("address"));
+            $("#driver-plate").val(item.data("plate"));
+
+            $("#driver-results").empty().hide();
+        }
+
+        // فرم خالی‌ساز
+        function clearForm(name = "") {
+            $("#driver-id").val("");
+            $("#driver-input").val(name);
+            $("#driver-national-id").val("");
+            $("#driver-residence").val("");
+            $("#driver-father-name").val("");
+            $("#driver-birth-date").val("");
+            $("#driver-certificate-date").val("");
+            $("#driver-certificate").val("");
+            $("#driver-phone").val("");
+            $("#driver-phone2").val("");
+            $("#driver-address").val("");
+        }
+
+        // انتخاب با کلیک
+        $(document).on("click", "#driver-results .list-group-item", function () {
+            chooseItem($(this));
+        });
+
+        // ذخیره اطلاعات
+        $("#driver-form").submit(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'save_driver' %}",
+                type: "POST",
+                data: $(this).serialize(),
+                headers: {"X-CSRFToken": "{{ csrf_token }}"},
+                success: function (resp) {
+                    if (resp.success) {
+                        $("#msg").text("با موفقیت ذخیره شد (ID: " + resp.id + ")");
+                    } else {
+                        $("#msg").text("خطا: " + resp.error);
+                    }
+                },
+                error: function () {
+                    $("#msg").text("مشکلی در ارتباط با سرور پیش آمد");
+                }
+            });
+        });
+    });
+</script>
+
+
 </body>
 </html>
