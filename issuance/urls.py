@@ -7,7 +7,7 @@ urlpatterns = [
     path('create_new/', create_new, name='create_new'),
     path('success/', success_page, name='success'),
     path('search/', search_page, name='search'),
-    path('print/', print_page, name='print'),
+    path('print/', bijak_last_view, name='print'),
     path('preview/<int:pk>/', preview_page, name='preview'),
 
     # path('add-sender/', add_sender, name='add_sender'),

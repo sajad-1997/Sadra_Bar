@@ -73,6 +73,7 @@ class Bijak(models.Model):
     insurance = models.CharField(max_length=100, verbose_name="مبلغ بیمه")
     loading_fee = models.CharField(max_length=10, verbose_name="هزینه خدمات", blank=True)
     freight = models.CharField(max_length=11, verbose_name="کرایه حمل")
+    # caption = models.TextField()
     sender = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='فرستنده')
     receiver = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='گیرنده')
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='راننده')

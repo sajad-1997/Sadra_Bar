@@ -1,10 +1,12 @@
+from django.contrib import messages
+from django.db.models import Q
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
-from django.http import JsonResponse
-from .models import Customer, Driver, Vehicle, Bijak
+from django.urls import reverse
+
 from .forms import CustomerForm, DriverForm, VehicleForm, CargoForm, ShipmentForm
-from django.db.models import Q
+from .models import Customer, Driver, Vehicle, Bijak
 
 
 def create_new(request):
@@ -258,7 +260,7 @@ def success_page(request):
 
 
 def search_page(request):
-    return render(request, 'search.html')
+    return render(request, 'bijak/barnameh2.html')
 
 
 # preview pages defs
@@ -332,6 +334,32 @@ def get_vehicle_by_driver(request):
         return JsonResponse({"success": True, "vehicle": data})
     except Vehicle.DoesNotExist:
         return JsonResponse({"success": False, "error": "وسیله‌ای برای این راننده پیدا نشد"})
+
+
+def bijak_last_view(request):
+    bijak = Bijak.objects.last()  # آخرین رکورد جدول
+    return render(request, "bijak/barnameh2.html", {"bijak": bijak})
+
+
+def save_bijak(request):
+    if request.method == "POST":
+        bijak = Bijak.objects.last()
+        if bijak:
+            bijak.tracking_code = request.POST.get("tracking_code")
+            bijak.issuance_date = request.POST.get("issuance_date")
+            bijak.value = request.POST.get("value")
+            bijak.insurance = request.POST.get("insurance")
+            bijak.loading_fee = request.POST.get("loading_fee")
+            bijak.freight = request.POST.get("freight")
+            # bijak.caption = request.POST.get("caption")
+            bijak.sender = request.POST.get("sender")
+            bijak.receiver = request.POST.get("receiver")
+            bijak.driver = request.POST.get("driver")
+            bijak.vehicle = request.POST.get("vehicle")
+            bijak.cargo = request.POST.get("cargo")
+            bijak.save()
+        return HttpResponseRedirect(reverse("bijak_last_view"))
+
 
 #
 # def edit_sender(request):

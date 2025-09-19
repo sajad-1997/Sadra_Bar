@@ -1,0 +1,312 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فرم حمل و نقل - A5 افقی</title>
+    <link rel="stylesheet" href="{% static 'form.css' %}">
+
+</head>
+<body>
+<div class="container">
+    <div class="controls no-print">
+        <button onclick="togglePreview()">پیش‌نمایش A5 افقی</button>
+        <button onclick="window.print()">چاپ فرم</button>
+        <button onclick="showFormData()" class="secondary">ویرایش اطلاعات</button>
+    </div>
+
+    <div class="form-content" id="formContent">
+        <!-- Header Section -->
+        <div class="header-section section">
+            <div>
+                <!-- Contact Information -->
+                <div class="phone-section section">
+                    <span>۰۹۳۰۹۸۴۳۷۰۴</span>
+                    <span>۰۹۱۵۹۱۷۵۲۰۳</span>
+                    <span>۰۵۱۳۵۴۲۰۷۰۳-۴</span>
+                </div>
+            </div>
+
+            <div class="company-header">
+                <h1>سازمان راهداری و حمل ونقل جاده ای</h1>
+                <p>اتحادیه وانت بار بارهای مشهد و حومه</p>
+                <p>بارنامه جاده ای داخلی</p>
+                <h2>موسسه حمل و نقل صدرا بار خراسان شماره ثبت: ۲۵۱</h2>
+            </div>
+
+            <div class="phone-section section">
+                <!-- Bijak Information -->
+                <div>
+                    <label>ارزش محموله:</label>
+                    <span>
+                        {{ bijak.value }}
+                    </span>
+                    <div>
+                        <label>شماره بارنامه:</label>
+                        <span>
+                        {{ bijak.tracking_code }}
+                    </span>
+                    </div>
+                    <div>
+                        <label>تاریخ:</label>
+                        <span>
+                        {{ bijak.issuance_date }}
+                    </span>
+                    </div>
+                </div>
+                {#                <div class="form-field">#}
+                {#                    <label>ساعت حرکت:</label>#}
+                {#                    <input type="text" id="movementTime">#}
+                {#                </div>#}
+            </div>
+        </div>
+
+        <!-- Main Data Table -->
+        <div class="section">
+            <table class="form-table">
+                <tr>
+                    <th class="table-header">فرستنده:</th>
+                    <th class="table-header">شناسه/کد ملی:</th>
+                    <th class="table-header">کد پستی:</th>
+                    <th class="table-header">تلفن:</th>
+                    <th class="table-header">آدرس محل بارگیری:</th>
+                </tr>
+                <tr>
+                    <td class="table-cell">{{ bijak.sender.name }}</td>
+                    <td class="table-cell">{{ bijak.sender.national_id }}</td>
+                    <td class="table-cell">{{ bijak.sender.postal }}</td>
+                    <td class="table-cell">{{ bijak.sender.phone }}</td>
+                    <td class="table-cell">{{ bijak.sender.address }}</td>
+                </tr>
+                <tr>
+                </tr>
+                <tr>
+                </tr>
+            </table>
+            <table class="form-table">
+                <tr>
+                    <th class="table-header">گیرنده:</th>
+                    <th class="table-header">شناسه/کد ملی:</th>
+                    <th class="table-header">کد پستی:</th>
+                    <th class="table-header">تلفن:</th>
+                    <th class="table-header">آدرس محل تخلیه:</th>
+
+                </tr>
+                <tr>
+                    <td class="table-cell">{{ bijak.receiver.name }}</td>
+                    <td class="table-cell">{{ bijak.receiver.national_id }}</td>
+                    <td class="table-cell">{{ bijak.receiver.postal }}</td>
+                    <td class="table-cell">{{ bijak.receiver.phone }}</td>
+                    <td class="table-cell">{{ bijak.receiver.address }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Driver Information Table -->
+        <div class="section">
+            <table class="form-table">
+                <tr>
+                    <th class="table-header">نام و نام خانوادگی راننده</th>
+                    <td class="table-cell">{{ bijak.driver.name }}</td>
+
+                    <th class="table-header">تاریخ تولد</th>
+                    <td class="table-cell">{{ bijak.driver.birth_date }}</td>
+
+                    <th class="table-header">نام پدر</th>
+                    <td class="table-cell">{{ bijak.driver.father_name }}</td>
+
+
+                    {##}
+                    {#                    <th class="table-header">هوشمند راننده</th>#}
+                    {#                    <td class="table-cell"></td>#}
+                </tr>
+                <tr>
+                    <th class="table-header">کد ملی</th>
+                    <td class="table-cell">{{ bijak.driver.national_id }}</td>
+
+                    <th class="table-header">شماره تلفن راننده</th>
+                    <td class="table-cell">{{ bijak.driver.phone }}</td>
+
+                    <th class="table-header">شماره تلفن دوم راننده</th>
+                    <td class="table-cell">{{ bijak.driver.phone2 }}</td>
+                </tr>
+                <tr>
+                    <th class="table-header">ساکن شهر</th>
+                    <td class="table-cell">{{ bijak.driver.residence }}</td>
+
+                    <th class="table-header">آدرس راننده</th>
+                    <td class="table-cell">{{ bijak.driver.address }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Vehicle Information Table -->
+        <div class="section">
+            <table class="form-table">
+                <tr>
+                    <th class="table-header">نوع ناوگان</th>
+                    <th class="table-header">شماره پلاک</th>
+                    <th class="table-header">سری پلاک</th>
+                    {#                    <th class="table-header">هوشمند ناوگان</th>#}
+                    <th class="table-header">شماره گواهینامه</th>
+                    <th class="table-header">تاریخ صدور</th>
+                </tr>
+                <tr>
+                    <td class="table-cell">{{ bijak.vehicle.type }}</td>
+                    <td class="table-cell">{{ bijak.vehicle.license_plate_three_digit }}
+                        {{ bijak.vehicle.license_plate_alphabet }}
+                        {{ bijak.vehicle.license_plate_two_digit }}</td>
+                    <td class="table-cell"><span>ایران   </span>{{ bijak.vehicle.license_plate_series }}</td>
+                    {#                    <td class="table-cell"><input type="text"></td>#}
+                    <td class="table-cell">{{ bijak.driver.certificate }}</td>
+                    <td class="table-cell">{{ bijak.driver.certificate_date }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Cargo Information Table -->
+        <div class="section">
+            <table class="form-table">
+                <thead>
+                <tr>
+                    <th class="table-header">نام محموله</th>
+                    <th class="table-header">وزن(کیلوگرم)/حجم(لیتر)</th>
+                    <th class="table-header">نوع بسته بندی</th>
+                    <th class="table-header">تعداد بسته</th>
+                    <th class="table-header">مبدا بارگیری</th>
+                    <th class="table-header">مقصد تخلیه</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="green-boxes">
+                    <td class="table-cell">{{ bijak.cargo.name }}</td>
+                    <td class="table-cell">{{ bijak.cargo.weight }}</td>
+                    <td class="table-cell">{{ bijak.cargo.package_type }}</td>
+                    <td class="table-cell">{{ bijak.cargo.number_of_packaging }}</td>
+                    <td class="table-cell">{{ bijak.cargo.origin }}</td>
+                    <td class="table-cell">{{ bijak.cargo.destination }}</td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bottom Information Section -->
+        <div class="bottom-section section">
+            <div class="form-field">
+                <label>مبلغ کرایه:</label>
+                <span>
+                    </span>
+            </div>
+            <div class="form-field">
+                <label>کل کرایه پرداختی در مقصد:</label>
+                <span>
+                        {{ bijak.freight }}
+                    </span>
+            </div>
+            <div class="form-field">
+                <label>بیمه:</label>
+                <span>
+                        {{ bijak.insurance }}
+                    </span>
+            </div>
+            <div class="form-field">
+                <label>مبلغ با حروف:</label>
+                <span>
+                    </span>
+            </div>
+            <div class="form-field">
+                <label>خدمات:</label>
+                <span>
+                        {{ bijak.loading_fee }}
+                    </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Caption Section -->
+    <div class="form-field section" style="margin: 1px 10px 10px 10px">
+        <label>توضیحات:</label>
+        <input type="text" id="explanation" style="max-width: 1000px;">
+    </div>
+
+    <!-- Signature Section -->
+    {#    <div class="signature-section section">#}
+    {#        <div class="signature-box">#}
+    {#            <p>امضاء راننده</p>#}
+    {#        </div>#}
+    {#        <div class="signature-box">#}
+    {#            <p>امضاء تحویل گیرنده</p>#}
+    {#        </div>#}
+    {#        <div class="signature-box">#}
+    {#            <p>مهر و امضاء</p>#}
+    {#            <p>شرکت حمل و نقل صدرابار خراسان</p>#}
+    {#            <p style="font-size: 10px;">مدیریت: سید سعید حسینی</p>#}
+    {#        </div>#}
+    {#    </div>#}
+</div>
+
+<script>
+    let isPreview = false;
+
+    function togglePreview() {
+        const formContent = document.getElementById('formContent');
+        const button = event.target;
+
+        if (!isPreview) {
+            formContent.style.transform = 'scale(0.7)';
+            formContent.style.transformOrigin = 'top center';
+            formContent.style.width = '210mm';
+            formContent.style.maxWidth = '210mm';
+            formContent.style.height = '148mm';
+            formContent.style.border = '2px dashed #007bff';
+            formContent.style.margin = '20px auto';
+            button.textContent = 'نمای عادی';
+            isPreview = true;
+        } else {
+            formContent.style.transform = '';
+            formContent.style.transformOrigin = '';
+            formContent.style.width = '';
+            formContent.style.maxWidth = '';
+            formContent.style.height = '';
+            formContent.style.border = '';
+            formContent.style.margin = '';
+            button.textContent = 'پیش‌نمایش A5 افقی';
+            isPreview = false;
+        }
+    }
+
+    function showFormData() {
+        const formData = {
+            operationValue: document.getElementById('operationValue').value,
+            movementTime: document.getElementById('movementTime').value,
+            formNumber: document.getElementById('formNumber').value,
+            date: document.getElementById('date').value,
+            services: document.getElementById('services').value,
+            detailedAmount: document.getElementById('detailedAmount').value,
+            totalCargo: document.getElementById('totalCargo').value,
+            explanation: document.getElementById('explanation').value
+        };
+
+        console.log('Form Data:', formData);
+        alert('اطلاعات فرم در کنسول مرورگر نمایش داده شد');
+    }
+
+    // Add form validation and data collection for all inputs if needed
+    function collectAllFormData() {
+        const inputs = document.querySelectorAll('input');
+        const data = {};
+        inputs.forEach((input, index) => {
+            if (input.id) {
+                data[input.id] = input.value;
+            } else {
+                data[`field_${index}`] = input.value;
+            }
+        });
+        return data;
+    }
+</script>
+</body>
+</html>
