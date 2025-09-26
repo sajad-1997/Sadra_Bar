@@ -1,9 +1,7 @@
-from django import forms
-from jalali_date.fields import JalaliDateField
-from jalali_date.widgets import AdminJalaliDateWidget
-from .models import Customer, Driver, Vehicle, Cargo, Bijak
 import jdatetime
-from jdatetime import date
+from django import forms
+
+from .models import Customer, Driver, Vehicle, Cargo, Caption, Bijak
 
 
 # 🔹 تابع تبدیل اعداد فارسی به انگلیسی
@@ -79,69 +77,68 @@ class CargoForm(PersianNumberFormMixin, forms.ModelForm):
         fields = '__all__'
 
 
+class CaptionForm(forms.ModelForm):
+    class Meta:
+        model = Caption
+        fields = '__all__'
+
+    captions = forms.ModelMultipleChoiceField(
+        queryset=Caption.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="انتخاب توضیحات آماده"
+    )
+    custom_explanation = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3}),
+        required=False,
+        label="توضیحات دستی"
+    )
+
+
 class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
-    numeric_fields = ['tracking_code', 'issuance_date', 'value', 'insurance', 'loading_fee', 'freight']
+    numeric_fields = ['tracking_code', 'issuance_date', 'value', 'total_fare', 'insurance', 'loading_fee', 'freight']
+
+    # فیلدهای نمایشی
+    tracking_code_display = forms.CharField(label="کد رهگیری", required=False, disabled=True)
+    issuance_date_display = forms.CharField(label="تاریخ صدور", required=False, disabled=True)
+
+    # فیلد چندتایی توضیحات
+    captions = forms.ModelMultipleChoiceField(
+        queryset=Caption.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="انتخاب توضیحات"
+    )
 
     class Meta:
         model = Bijak
-        fields = 'tracking_code', 'issuance_date', 'value', 'insurance', 'loading_fee', 'freight'
+        exclude = ('tracking_code', 'issuance_date')
+        fields = ('value', 'total_fare', 'insurance', 'loading_fee', 'freight', )  # فیلدهای مدلی
 
-    def __int__(self, *args, **kwargs):
-        super(ShipmentForm, self).__init__(*args, **kwargs)
-        self.fields['issuance_date'] = JalaliDateField(label=('تاریخ صدور'),
-                                                       widget=AdminJalaliDateWidget)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-# class Bijak(forms.ModelForm):
-#     class Meta:
-#         model = Bijak
-#         fields = 'tracking_code', 'issuance_date', 'value', 'origin', 'destination', 'insurance', 'loading_fee'
-#         widgets = {
-#             'issuance_date': forms.TextInput(attrs={
-#                 'class': 'form-control persian-date-picker',
-#                 'placeholder': 'تاریخ را انتخاب کنید'}),
-#         }
+        # مقداردهی اولیه فیلدهای نمایشی
+        if self.instance and self.instance.pk:
+            self.fields['tracking_code_display'].initial = getattr(self.instance, 'tracking_code', '')
+            issuance = getattr(self.instance, 'issuance_date', '')
+            self.fields['issuance_date_display'].initial = str(issuance)
 
-# class Bijak(forms.ModelForm):
-#     sender = forms.ModelChoiceField(
-#         queryset=Sender.objects.all(),
-#         widget=forms.Select(attrs={'class': 'form-control'}),
-#         required=False
-#     )
-#     receiver = forms.ModelChoiceField(
-#         queryset=Receiver.objects.all(),
-#         widget=forms.Select(attrs={'class': 'form-control'}),
-#         required=False
-#     )
+        # تاریخ صدور جلالی
+        # self.fields['issuance_date'] = JalaliDateField(
+        #     label="تاریخ صدور",
+        #     widget=AdminJalaliDateWidget
+        # )
+
+        # افزودن کلاس مخصوص به فیلدهای عددی
+        for field_name in self.numeric_fields:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.update({'class': 'numeric-field'})
+
+    class Media:
+        js = ('js/shipment_form.js',)  # فایل جاوااسکریپت که رفتار محاسباتی را انجام می‌دهد
 #
-#     class Meta:
-#         model = Bijak
-#         fields = 'tracking_code', 'issuance_date', 'value', 'origin', 'destination', 'insurance', 'loading_fee'
-
-# class Bijak(forms.ModelForm):
-#     sender = forms.ModelChoiceField(
-#         queryset=Sender.objects.all(),
-#         empty_label="-- انتخاب فرستنده --",
-#         widget=forms.Select(attrs={'class': 'form-control'})
-#     )
-#     receiver = forms.ModelChoiceField(
-#         queryset=Receiver.objects.all(),
-#         empty_label="-- انتخاب گیرنده --",
-#         widget=forms.Select(attrs={'class': 'form-control'})
-#     )
-#     driver = forms.ModelChoiceField(
-#         queryset=Driver.objects.all(),
-#         empty_label="-- انتخاب راننده --",
-#         widget=forms.Select(attrs={'class': 'form-control'})
-#     )
-#     vehicle = forms.ModelChoiceField(
-#         queryset=Vehicle.objects.all(),
-#         empty_label="-- انتخاب خودرو --",
-#         widget=forms.Select(attrs={'class': 'form-control'})
-#     )
-#
-#     class Meta:
-#         model = Bijak
-#         fields = ['tracking_code', 'issuance_date', 'value', 'origin', 'destination', 'insurance', 'loading_fee']
-#     widgets = {
-#         'issuance_date': forms.TextInput(attrs={'class': 'persian-date-picker'}),
-#     }
+# def __int__(self, *args, **kwargs):
+#     super(ShipmentForm, self).__init__(*args, **kwargs)
+#     self.fields['issuance_date'] = JalaliDateField(label=('تاریخ صدور'),
+#                                                    widget=AdminJalaliDateWidget)

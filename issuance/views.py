@@ -2,24 +2,28 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
-from .forms import CustomerForm, DriverForm, VehicleForm, CargoForm, ShipmentForm
-from .models import Customer, Driver, Vehicle, Bijak
+from .forms import CustomerForm, DriverForm, VehicleForm, CargoForm, CaptionForm, ShipmentForm
+from .models import Customer, Driver, Vehicle, Cargo, Caption, Bijak
 
 
 def create_new(request):
+    """ایجاد بیجک جدید (بارنامه + محموله)"""
+
     if request.method == 'POST':
+        # شناسه‌ها
         sender_id = request.POST.get("sender")
         receiver_id = request.POST.get("receiver")
         driver_id = request.POST.get("driver")
+        caption_id = request.POST.get("caption")  # ✅ گرفتن توضیح انتخابی
 
+        # فرم‌ها
         cargo_form = CargoForm(request.POST, prefix='cargo')
         shipment_form = ShipmentForm(request.POST, prefix='shipment')
 
         if cargo_form.is_valid() and shipment_form.is_valid():
-            # احراز موجودیت فرستنده/گیرنده/راننده
             try:
                 sender = get_object_or_404(Customer, id=sender_id)
                 receiver = get_object_or_404(Customer, id=receiver_id)
@@ -28,31 +32,37 @@ def create_new(request):
                 messages.error(request, "فرستنده، گیرنده یا راننده معتبر نیستند.")
                 return redirect('create_new')
 
-            # تلاش برای یافتن خودروِ متعلق به راننده (اختیاری)
-            # اگر ForeignKey از Vehicle به Driver دارید:
             vehicle = Vehicle.objects.filter(driver_id=driver.id).order_by('-id').first()
-            # اگر related_name سفارشی دارید (مثلاً driver.vehicles)، خط بالا کافی است و نیازی به driver.vehicle نیست.
 
-            # ذخیره‌سازی
             cargo = cargo_form.save()
             shipment = shipment_form.save(commit=False)
             shipment.sender = sender
             shipment.receiver = receiver
-            shipment.cargo = cargo
             shipment.driver = driver
-            if vehicle:  # فقط اگر ماشین یافت شد ست می‌کنیم
+            shipment.cargo = cargo
+
+            if vehicle:
                 shipment.vehicle = vehicle
+                # ذخیره انتخاب‌های چندتایی توضیحات
+            captions = shipment_form.cleaned_data.get('captions')
+            if captions:
+                shipment.captions.set(captions)  # اگر فیلد ManyToMany هست
+                # اگر میخوای فقط یک توضیح اصلی باشه، می‌تونی shipment.explanation = captions.first()
+
             shipment.save()
 
             messages.success(request, "بیجک با موفقیت ثبت شد.")
             return redirect('success')
+
     else:
         cargo_form = CargoForm(prefix='cargo')
         shipment_form = ShipmentForm(prefix='shipment')
+        caption_form = CaptionForm()
 
     return render(request, 'bijak/issuance_form.html', {
         'cargo_form': cargo_form,
-        'shipment_form': shipment_form
+        'shipment_form': shipment_form,
+        'caption_form': caption_form,  # ✅ پاس دادن لیست توضیحات
     })
 
 
@@ -69,7 +79,8 @@ def search_shipment(request):
             Q(vehicle__license_plate_three_digit__icontains=query) |
             Q(vehicle__license_plate_alphabet__icontains=query) |
             Q(vehicle__license_plate_series__icontains=query) |
-            Q(cargo__name__icontains=query)
+            Q(cargo__name__icontains=query) |
+            Q(captions__name__icontains=query)
         )
 
     return render(request, 'bijak/bijak_search.html', {
@@ -275,17 +286,6 @@ def preview_page(request, pk):
 
 
 # add date defs
-# def add_sender(request):
-#     if request.method == 'POST':
-#         form = SenderForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('create_new')  # بازگشت به فرم بارنامه
-#     else:
-#         form = SenderForm()
-#     return render(request, 'add/add_customer.html', {"form": form})
-
-
 def add_customer(request):
     if request.method == 'POST':
         form = CustomerForm(request.POST)
@@ -336,6 +336,19 @@ def get_vehicle_by_driver(request):
         return JsonResponse({"success": False, "error": "وسیله‌ای برای این راننده پیدا نشد"})
 
 
+def add_caption(request):
+    if request.method == "POST":
+        form = CaptionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "✅ توضیحات با موفقیت ذخیره شد.")
+            return redirect("create_new")
+    else:
+        form = CaptionForm()
+
+    return render(request, 'add/add_caption.html', {"form": form})
+
+
 def bijak_last_view(request):
     bijak = Bijak.objects.last()  # آخرین رکورد جدول
     return render(request, "bijak/barnameh2.html", {"bijak": bijak})
@@ -351,7 +364,7 @@ def save_bijak(request):
             bijak.insurance = request.POST.get("insurance")
             bijak.loading_fee = request.POST.get("loading_fee")
             bijak.freight = request.POST.get("freight")
-            # bijak.caption = request.POST.get("caption")
+            bijak.caption = request.POST.get("caption")
             bijak.sender = request.POST.get("sender")
             bijak.receiver = request.POST.get("receiver")
             bijak.driver = request.POST.get("driver")

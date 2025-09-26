@@ -14,6 +14,7 @@ urlpatterns = [
     path('add-customer/', add_customer, name='add_customer'),
     path('add-driver/', add_driver, name='add_driver'),
     path('add-vehicle/', add_vehicle, name='add_vehicle'),
+    path('add-caption/', add_caption, name='add_caption'),
 
     # path('edit-sender/', edit_sender, name='edit_sender'),
     path('edit-customer/', edit_customer, name='edit_customer'),

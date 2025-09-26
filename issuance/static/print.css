@@ -63,13 +63,13 @@ body {
 .form-field-header {
     display: flex;
     flex-direction: column; /* آیتم‌ها زیر هم */
-    gap: 10px;              /* فاصله بین آیتم‌ها */
-    max-width: 500px;       /* اختیاری */
+    gap: 10px; /* فاصله بین آیتم‌ها */
+    max-width: 500px; /* اختیاری */
 }
 
 .form-field-item {
     display: flex;
-    flex-direction: row;         /* لیبل و مقدار کنار هم */
+    flex-direction: row; /* لیبل و مقدار کنار هم */
     justify-content: space-between;
     align-items: center;
     padding: 6px 0;
@@ -211,7 +211,7 @@ body {
         padding: 0;
         height: 100%;
         width: 100%;
-        background: white !important;
+        /*background: white !important;*/
     }
 
     p, h1, h2, label {
@@ -247,8 +247,12 @@ body {
         /*page-break-inside: avoid;*/
     }
 
+    th {
+        color: #545b62 !important;
+    }
+
     @page {
         size: A5 landscape;
-        margin: 10px;
+        margin: 20px;
     }
 }

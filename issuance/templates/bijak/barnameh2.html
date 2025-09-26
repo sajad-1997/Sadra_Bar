@@ -1,12 +1,12 @@
 {% load static %}
-
+{% load persian_numbers %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>فرم حمل و نقل - A5 افقی</title>
-    <link rel="stylesheet" href="{% static 'form.css' %}">
+    <link rel="stylesheet" href="{% static 'print.css' %}">
 
 </head>
 <body>
@@ -41,18 +41,18 @@
                 <div>
                     <label>ارزش محموله:</label>
                     <span>
-                        {{ bijak.value }}
+                        {{ bijak.value|persian_numbers }}
                     </span>
                     <div>
                         <label>شماره بارنامه:</label>
                         <span>
-                        {{ bijak.tracking_code }}
+                        {{ bijak.tracking_code|persian_numbers }}
                     </span>
                     </div>
                     <div>
                         <label>تاریخ:</label>
                         <span>
-                        {{ bijak.issuance_date }}
+                        {{ bijak.issuance_date|persian_numbers }}
                     </span>
                     </div>
                 </div>
@@ -75,10 +75,10 @@
                 </tr>
                 <tr>
                     <td class="table-cell">{{ bijak.sender.name }}</td>
-                    <td class="table-cell">{{ bijak.sender.national_id }}</td>
-                    <td class="table-cell">{{ bijak.sender.postal }}</td>
-                    <td class="table-cell">{{ bijak.sender.phone }}</td>
-                    <td class="table-cell">{{ bijak.sender.address }}</td>
+                    <td class="table-cell">{{ bijak.sender.national_id|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.sender.postal|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.sender.phone|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.sender.address|persian_numbers }}</td>
                 </tr>
                 <tr>
                 </tr>
@@ -96,10 +96,10 @@
                 </tr>
                 <tr>
                     <td class="table-cell">{{ bijak.receiver.name }}</td>
-                    <td class="table-cell">{{ bijak.receiver.national_id }}</td>
-                    <td class="table-cell">{{ bijak.receiver.postal }}</td>
-                    <td class="table-cell">{{ bijak.receiver.phone }}</td>
-                    <td class="table-cell">{{ bijak.receiver.address }}</td>
+                    <td class="table-cell">{{ bijak.receiver.national_id|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.receiver.postal|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.receiver.phone|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.receiver.address|persian_numbers }}</td>
                 </tr>
             </table>
         </div>
@@ -109,35 +109,29 @@
             <table class="form-table">
                 <tr>
                     <th class="table-header">نام و نام خانوادگی راننده</th>
-                    <td class="table-cell">{{ bijak.driver.name }}</td>
-
+                    <th class="table-header">کد ملی</th>
                     <th class="table-header">تاریخ تولد</th>
-                    <td class="table-cell">{{ bijak.driver.birth_date }}</td>
-
                     <th class="table-header">نام پدر</th>
-                    <td class="table-cell">{{ bijak.driver.father_name }}</td>
-
-
-                    {##}
                     {#                    <th class="table-header">هوشمند راننده</th>#}
                     {#                    <td class="table-cell"></td>#}
                 </tr>
                 <tr>
-                    <th class="table-header">کد ملی</th>
-                    <td class="table-cell">{{ bijak.driver.national_id }}</td>
-
-                    <th class="table-header">شماره تلفن راننده</th>
-                    <td class="table-cell">{{ bijak.driver.phone }}</td>
-
-                    <th class="table-header">شماره تلفن دوم راننده</th>
-                    <td class="table-cell">{{ bijak.driver.phone2 }}</td>
+                    <td class="table-cell">{{ bijak.driver.name }}</td>
+                    <td class="table-cell">{{ bijak.driver.national_id|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.driver.birth_date|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.driver.father_name }}</td>
                 </tr>
                 <tr>
+                    <th class="table-header">شماره تلفن راننده</th>
+                    <th class="table-header">شماره تلفن دوم راننده</th>
                     <th class="table-header">ساکن شهر</th>
-                    <td class="table-cell">{{ bijak.driver.residence }}</td>
-
                     <th class="table-header">آدرس راننده</th>
-                    <td class="table-cell">{{ bijak.driver.address }}</td>
+                </tr>
+                <tr>
+                    <td class="table-cell">{{ bijak.driver.phone|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.driver.phone2|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.driver.residence }}</td>
+                    <td class="table-cell">{{ bijak.driver.address|persian_numbers }}</td>
                 </tr>
             </table>
         </div>
@@ -155,13 +149,14 @@
                 </tr>
                 <tr>
                     <td class="table-cell">{{ bijak.vehicle.type }}</td>
-                    <td class="table-cell">{{ bijak.vehicle.license_plate_three_digit }}
+                    <td class="table-cell">{{ bijak.vehicle.license_plate_three_digit|persian_numbers }}
                         {{ bijak.vehicle.license_plate_alphabet }}
-                        {{ bijak.vehicle.license_plate_two_digit }}</td>
-                    <td class="table-cell"><span>ایران   </span>{{ bijak.vehicle.license_plate_series }}</td>
+                        {{ bijak.vehicle.license_plate_two_digit|persian_numbers }}</td>
+                    <td class="table-cell"><span>ایران   </span>{{ bijak.vehicle.license_plate_series|persian_numbers }}
+                    </td>
                     {#                    <td class="table-cell"><input type="text"></td>#}
-                    <td class="table-cell">{{ bijak.driver.certificate }}</td>
-                    <td class="table-cell">{{ bijak.driver.certificate_date }}</td>
+                    <td class="table-cell">{{ bijak.driver.certificate|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.driver.certificate_date|persian_numbers }}</td>
                 </tr>
             </table>
         </div>
@@ -182,9 +177,9 @@
                 <tbody>
                 <tr class="green-boxes">
                     <td class="table-cell">{{ bijak.cargo.name }}</td>
-                    <td class="table-cell">{{ bijak.cargo.weight }}</td>
+                    <td class="table-cell">{{ bijak.cargo.weight|persian_numbers }}</td>
                     <td class="table-cell">{{ bijak.cargo.package_type }}</td>
-                    <td class="table-cell">{{ bijak.cargo.number_of_packaging }}</td>
+                    <td class="table-cell">{{ bijak.cargo.number_of_packaging|persian_numbers }}</td>
                     <td class="table-cell">{{ bijak.cargo.origin }}</td>
                     <td class="table-cell">{{ bijak.cargo.destination }}</td>
 
@@ -198,31 +193,38 @@
             <div class="form-field">
                 <label>مبلغ کرایه:</label>
                 <span>
-                    </span>
+                    {{ bijak.freight|persian_numbers }}
+                </span>
             </div>
-            <div class="form-field">
-                <label>کل کرایه پرداختی در مقصد:</label>
-                <span>
-                        {{ bijak.freight }}
-                    </span>
-            </div>
+
             <div class="form-field">
                 <label>بیمه:</label>
                 <span>
-                        {{ bijak.insurance }}
-                    </span>
+                        {{ bijak.insurance|persian_numbers }}
+                </span>
             </div>
-            <div class="form-field">
-                <label>مبلغ با حروف:</label>
-                <span>
-                    </span>
-            </div>
+
             <div class="form-field">
                 <label>خدمات:</label>
                 <span>
-                        {{ bijak.loading_fee }}
-                    </span>
+                        {{ bijak.loading_fee|persian_numbers }}
+                </span>
             </div>
+
+            <div class="form-field">
+                <label>کل کرایه پرداختی در مقصد:</label>
+                <span>
+                        {{ bijak.total_fare|persian_numbers }}
+                </span>
+            </div>
+
+            <div class="form-field">
+                <label>مبلغ با حروف:</label>
+                <span>
+                    {{ bijak.value_in_words }}
+                </span>
+            </div>
+
         </div>
     </div>
 
