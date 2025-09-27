@@ -17,7 +17,7 @@ def create_new(request):
         sender_id = request.POST.get("sender")
         receiver_id = request.POST.get("receiver")
         driver_id = request.POST.get("driver")
-        caption_id = request.POST.get("caption")  # ✅ گرفتن توضیح انتخابی
+        caption_id = request.POST.get("captions")  # ✅ گرفتن توضیح انتخابی
 
         # فرم‌ها
         cargo_form = CargoForm(request.POST, prefix='cargo')
@@ -57,12 +57,10 @@ def create_new(request):
     else:
         cargo_form = CargoForm(prefix='cargo')
         shipment_form = ShipmentForm(prefix='shipment')
-        caption_form = CaptionForm()
 
     return render(request, 'bijak/issuance_form.html', {
         'cargo_form': cargo_form,
         'shipment_form': shipment_form,
-        'caption_form': caption_form,  # ✅ پاس دادن لیست توضیحات
     })
 
 
@@ -87,13 +85,6 @@ def search_shipment(request):
         'shipments': shipments,
         'query': query
     })
-
-
-# def search_customer(request):
-#     query = request.GET.get('q', '')
-#     results = Customer.objects.filter(name__icontains=query)[:10]
-#     data = [{"id": r.id, "name": r.name, "phone": r.phone} for r in results]
-#     return JsonResponse({"results": data})
 
 
 def search_customer(request):
@@ -276,12 +267,20 @@ def search_page(request):
 
 # preview pages defs
 def print_page(request, pk):
-    shipment = Bijak.objects.select_related('sender', 'Customer', 'driver', 'vehicle', 'cargo').get(pk=pk)
+    shipment = Bijak.objects.select_related(
+        'sender', 'receiver', 'driver', 'vehicle', 'cargo'
+    ).prefetch_related(
+        'captions'
+    ).get(pk=pk)
     return render(request, 'secondary/print.html', {'shipment': shipment})
 
 
 def preview_page(request, pk):
-    bijak = Bijak.objects.select_related('sender', 'receiver', 'driver', 'vehicle', 'cargo').get(pk=pk)
+    bijak = Bijak.objects.select_related(
+        'sender', 'receiver', 'driver', 'vehicle', 'cargo'
+    ).prefetch_related(
+        'captions'
+    ).get(pk=pk)
     return render(request, 'secondary/preview.html', {'bijak': bijak})
 
 

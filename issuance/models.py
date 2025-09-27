@@ -77,7 +77,7 @@ class Bijak(models.Model):
     loading_fee = models.CharField(max_length=100, verbose_name="هزینه خدمات")
     freight = models.CharField(max_length=100, verbose_name="مبلغ کرایه")
     total_fare = models.CharField(max_length=100, verbose_name="کل کرایه پرداختی در مقصد")
-    captions = models.ManyToManyField('Caption', blank=True, related_name="bijaks", verbose_name="توضیحات آماده")
+    captions = models.ManyToManyField('Caption', blank=True, related_name="caption_bijaks", verbose_name="توضیحات آماده")
     custom_caption = models.TextField(blank=True, null=True, verbose_name="توضیح دستی")
     sender = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='sender_bijaks')
     receiver = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='received_bijaks')

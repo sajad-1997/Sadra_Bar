@@ -61,7 +61,7 @@
             <table class="table table-bordered text-center">
                 <tr>
                     <th>تاریخ صدور</th>
-                    <th>مبلغ کرایه</th>
+                    <th>کرایه پرداختی</th>
                     <th>ارزش محموله</th>
                     <th>مبدا بارگیری</th>
                     <th>مقصد تخلیه</th>
@@ -70,7 +70,7 @@
                 </tr>
                 <tr>
                     <td>{{ bijak.issuance_date }}</td>
-                    <td>{{ bijak.freight }} <strong>ریال</strong></td>
+                    <td>{{ bijak.total_fare }} <strong>ریال</strong></td>
                     <td>{{ bijak.value }} <strong>ریال</strong></td>
                     <td>{{ bijak.cargo.origin }}</td>
                     <td>{{ bijak.cargo.destination }}</td>
@@ -87,12 +87,14 @@
                     <th>شناسه/کد ملی</th>
                     <th>کد پستی</th>
                     <th>آدرس</th>
+                    <th>تلفن</th>
                 </tr>
                 <tr>
                     <td>{{ bijak.sender.name }}</td>
                     <td>{{ bijak.sender.national_id }}</td>
                     <td>{{ bijak.sender.postal }}</td>
                     <td>{{ bijak.sender.address }}</td>
+                    <td>{{ bijak.sender.phone }}</td>
                 </tr>
             </table>
 
@@ -104,12 +106,14 @@
                     <th>شناسه/کد ملی</th>
                     <th>کد پستی</th>
                     <th>آدرس</th>
+                    <th>تلفن</th>
                 </tr>
                 <tr>
                     <td>{{ bijak.receiver.name }}</td>
                     <td>{{ bijak.receiver.national_id }}</td>
                     <td>{{ bijak.receiver.postal }}</td>
                     <td>{{ bijak.receiver.address }}</td>
+                    <td>{{ bijak.receiver.phone }}</td>
                 </tr>
             </table>
 
@@ -150,7 +154,7 @@
                     <td>
                         {{ bijak.vehicle.license_plate_two_digit }} <strong> </strong>
                         {{ bijak.vehicle.license_plate_alphabet }} <strong> </strong>
-                        {{ bijak.vehicle.license_plate_three_digit }}<strong> ایران</strong>
+                        {{ bijak.vehicle.license_plate_three_digit }}<strong> || ایران</strong>
                         {{ bijak.vehicle.license_plate_series }}</td>
                     <td>{{ bijak.vehicle.type }}</td>
                     <td>{{ bijak.vehicle.driver.name }}</td>
@@ -162,7 +166,7 @@
             <table class="table table-bordered text-center">
                 <tr>
                     <th>شرح محموله</th>
-                    <th>وزن</th>
+                    <th>وزن/حجم</th>
                     <th>نوع بسته بندی</th>
                     <th>تعداد بسته</th>
                 </tr>
@@ -171,6 +175,18 @@
                     <td>{{ bijak.cargo.weight }}</td>
                     <td>{{ bijak.cargo.package_type }}</td>
                     <td>{{ bijak.cargo.number_of_packaging }}</td>
+                </tr>
+            </table>
+
+
+            <!-- توضیحات -->
+            <h5 class="section-title">توضیحات پاورقی</h5>
+            <table class="table table-bordered text-center">
+                <tr>
+                    <th>شرح توضیحات</th>
+                </tr>
+                <tr>
+                    <td>{{  }}</td>
                 </tr>
             </table>
 

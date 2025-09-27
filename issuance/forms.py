@@ -98,6 +98,7 @@ class CaptionForm(forms.ModelForm):
 class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
     numeric_fields = ['tracking_code', 'issuance_date', 'value', 'total_fare', 'insurance', 'loading_fee', 'freight']
 
+
     # فیلدهای نمایشی
     tracking_code_display = forms.CharField(label="کد رهگیری", required=False, disabled=True)
     issuance_date_display = forms.CharField(label="تاریخ صدور", required=False, disabled=True)
@@ -139,6 +140,6 @@ class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
         js = ('js/shipment_form.js',)  # فایل جاوااسکریپت که رفتار محاسباتی را انجام می‌دهد
 #
 # def __int__(self, *args, **kwargs):
-#     super(ShipmentForm, self).__init__(*args, **kwargs)
+#     super(ShipmentForm, self).__init__(*args, **kwrgs)
 #     self.fields['issuance_date'] = JalaliDateField(label=('تاریخ صدور'),
 #                                                    widget=AdminJalaliDateWidget)
