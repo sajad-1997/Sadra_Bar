@@ -34,5 +34,6 @@ urlpatterns = [
     path("save-driver/", save_driver, name="save_driver"),
     path('ajax/search-keyboard/', search_customer, name='search_customer_keyboard'),
     path("ajax/get-vehicle/", get_vehicle_by_driver, name="get_vehicle_by_driver"),
+    path("bijak/<int:pk>/qr/", bijak_qr, name="bijak_qr"),
 
 ]

@@ -181,12 +181,36 @@ body {
 
 /* Phone section */
 .phone-section {
-    text-align: center;
-    margin: 15px 0;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: auto 1fr; /* QR در ستون اول، شماره‌ها در ستون دوم */
+    align-items: stretch;             /* ارتفاع ستون‌ها برابر شود */
+    gap: 1rem;
+    direction: rtl;
+    justify-content: end;
 }
 
+.qr-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-container img {
+    width: 100%;
+    height: 100%;
+    max-width: 100px;   /* حداقل اندازه کنترل‌شده */
+    max-height: 90px; /* از بیش‌کشیدگی جلوگیری کن */
+    object-fit: contain;
+}
+
+.phones {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.5;
+    font-size: 11px;
+    text-align: right;
+}
 /* Bijak section */
 .bijak-section {
     text-align: center;

@@ -1,29 +1,39 @@
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-
+import qrcode
+from io import BytesIO
+from django.http import HttpResponse
 from .forms import CustomerForm, DriverForm, VehicleForm, CargoForm, CaptionForm, ShipmentForm
-from .models import Customer, Driver, Vehicle, Cargo, Caption, Bijak
+from .models import Customer, Driver, Vehicle, Caption, Bijak
 
 
+# from .utils import num_to_word_rial
+
+
+# -----------------------
+# بیجک جدید (ثبت)
+# -----------------------
 def create_new(request):
     """ایجاد بیجک جدید (بارنامه + محموله)"""
 
     if request.method == 'POST':
-        # شناسه‌ها
+        action = request.POST.get('action')  # دکمه ثبت یا چاپ
         sender_id = request.POST.get("sender")
         receiver_id = request.POST.get("receiver")
         driver_id = request.POST.get("driver")
-        caption_id = request.POST.get("captions")  # ✅ گرفتن توضیح انتخابی
+        selected_caption_id = request.POST.get("selected_caption")  # توضیح انتخابی
+        manual_text = request.POST.get("manual_description", "").strip()  # توضیح دستی
 
-        # فرم‌ها
-        cargo_form = CargoForm(request.POST, prefix='cargo')
         shipment_form = ShipmentForm(request.POST, prefix='shipment')
+        cargo_form = CargoForm(request.POST, prefix='cargo')
 
-        if cargo_form.is_valid() and shipment_form.is_valid():
+        if shipment_form.is_valid() and cargo_form.is_valid():
+            # دریافت اشیاء قبل از atomic
             try:
                 sender = get_object_or_404(Customer, id=sender_id)
                 receiver = get_object_or_404(Customer, id=receiver_id)
@@ -34,36 +44,69 @@ def create_new(request):
 
             vehicle = Vehicle.objects.filter(driver_id=driver.id).order_by('-id').first()
 
-            cargo = cargo_form.save()
-            shipment = shipment_form.save(commit=False)
-            shipment.sender = sender
-            shipment.receiver = receiver
-            shipment.driver = driver
-            shipment.cargo = cargo
+            with transaction.atomic():
+                # ذخیره محموله
+                cargo = cargo_form.save()
 
-            if vehicle:
-                shipment.vehicle = vehicle
-                # ذخیره انتخاب‌های چندتایی توضیحات
-            captions = shipment_form.cleaned_data.get('captions')
-            if captions:
-                shipment.captions.set(captions)  # اگر فیلد ManyToMany هست
-                # اگر میخوای فقط یک توضیح اصلی باشه، می‌تونی shipment.explanation = captions.first()
+                # ایجاد بیجک
+                bijak = shipment_form.save(commit=False)
+                bijak.sender = sender
+                bijak.receiver = receiver
+                bijak.driver = driver
+                bijak.vehicle = vehicle
+                bijak.cargo = cargo
 
-            shipment.save()
+                # توضیح انتخابی
+                if selected_caption_id:
+                    try:
+                        selected_caption = Caption.objects.get(id=selected_caption_id)
+                        bijak.selected_caption = selected_caption
+                    except Caption.DoesNotExist:
+                        pass
+
+                # توضیح دستی
+                if manual_text:
+                    # ذخیره در جدول Caption برای استفاده احتمالی آینده
+                    Caption.objects.create(content=manual_text)
+                    bijak.custom_caption = manual_text
+
+                # ذخیره بیجک
+                bijak.save()
+
+            # هدایت بعد از ذخیره
+            if action == 'print':
+                return redirect('print', pk=bijak.pk)
 
             messages.success(request, "بیجک با موفقیت ثبت شد.")
-            return redirect('success')
+            return redirect('preview', pk=bijak.pk)
+
+        else:
+            messages.error(request, "خطا در اعتبارسنجی فرم‌ها. لطفاً دوباره بررسی کنید.")
+
 
     else:
-        cargo_form = CargoForm(prefix='cargo')
         shipment_form = ShipmentForm(prefix='shipment')
+        cargo_form = CargoForm(prefix='cargo')
+
+    # پاس دادن تمام توضیحات موجود به قالب
+    captions = Caption.objects.all().order_by('-id')
 
     return render(request, 'bijak/issuance_form.html', {
-        'cargo_form': cargo_form,
         'shipment_form': shipment_form,
+        'cargo_form': cargo_form,
+        'captions': captions,
     })
 
 
+def to_words_view(request):
+    num = request.GET.get("num", "0")
+    words = num_to_word_rial(num)
+    return JsonResponse({"words": words})
+
+
+# -----------------------
+# جستجوی بیجک
+# -----------------------
 def search_shipment(request):
     query = request.GET.get('q', '').strip()
     shipments = Bijak.objects.all()
@@ -78,7 +121,7 @@ def search_shipment(request):
             Q(vehicle__license_plate_alphabet__icontains=query) |
             Q(vehicle__license_plate_series__icontains=query) |
             Q(cargo__name__icontains=query) |
-            Q(captions__name__icontains=query)
+            Q(selected_caption__content__icontains=query)  # تغییر به selected_caption
         )
 
     return render(request, 'bijak/bijak_search.html', {
@@ -87,6 +130,9 @@ def search_shipment(request):
     })
 
 
+# -----------------------
+# سایر جستجوها (مشتری، راننده، وسیله)
+# -----------------------
 def search_customer(request):
     query = request.GET.get("q", "").strip()
 
@@ -94,19 +140,19 @@ def search_customer(request):
         return JsonResponse({"results": []})
 
     # جستجو فقط بر اساس همون مقدار وارد شده (بدون حذف فاصله‌ها)
-    customer = Customer.objects.filter(
+    customers = Customer.objects.filter(
         Q(name__icontains=query)
-    )[:10]
+    )[:5]
 
     results = []
-    for s in customer:
+    for c in customers:
         results.append({
-            "id": s.id,
-            "name": s.name,
-            "phone": s.phone,
-            "address": s.address,
-            "national_id": s.national_id,
-            "postal": s.postal,
+            "id": c.id,
+            "name": c.name,
+            "phone": c.phone,
+            "address": c.address,
+            "national_id": c.national_id,
+            "postal": c.postal,
         })
 
     return JsonResponse({"results": results})
@@ -135,13 +181,35 @@ def save_customer(request):
                 return JsonResponse({"success": False, "error": "مشتری یافت نشد"})
         else:  # ایجاد رکورد جدید
             customer = Customer.objects.create(
-                name=name, national_id=national_id, postal=postal,
-                phone=phone, address=address,
+                name=name,
+                national_id=national_id,
+                postal=postal,
+                phone=phone,
+                address=address,
             )
 
         return JsonResponse({"success": True, "id": customer.id})
 
     return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+def duplicate_customer(request):
+    if request.method == "POST":
+        try:
+            # رکورد جدید بساز
+            new_customer = Customer.objects.create(
+                name=request.POST.get("name"),
+                national_id=request.POST.get("national_id"),
+                postal=request.POST.get("postal"),
+                phone=request.POST.get("phone"),
+                address=request.POST.get("address"),
+            )
+
+            return JsonResponse({"success": True, "new_id": new_customer.id})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "درخواست نامعتبر"})
 
 
 def search_driver(request):
@@ -152,7 +220,7 @@ def search_driver(request):
 
     drivers = Driver.objects.filter(
         Q(name__icontains=query)
-    )[:10]
+    )[:5]
 
     results = []
     for d in drivers:
@@ -262,29 +330,38 @@ def success_page(request):
 
 
 def search_page(request):
-    return render(request, 'bijak/barnameh2.html')
+    return render(request, 'bijak/final_bijak.html')
 
 
-# preview pages defs
+# -----------------------
+# پیش‌نمایش و چاپ
+# -----------------------
 def print_page(request, pk):
     shipment = Bijak.objects.select_related(
-        'sender', 'receiver', 'driver', 'vehicle', 'cargo'
-    ).prefetch_related(
-        'captions'
+        'sender', 'receiver', 'driver', 'vehicle', 'cargo', 'selected_caption'
     ).get(pk=pk)
     return render(request, 'secondary/print.html', {'shipment': shipment})
 
 
 def preview_page(request, pk):
     bijak = Bijak.objects.select_related(
-        'sender', 'receiver', 'driver', 'vehicle', 'cargo'
-    ).prefetch_related(
-        'captions'
+        'sender', 'receiver', 'driver', 'vehicle', 'cargo', 'selected_caption'
     ).get(pk=pk)
     return render(request, 'secondary/preview.html', {'bijak': bijak})
 
 
-# add date defs
+def bijak_last_view(request, pk):
+    # bijak = Bijak.objects.last()  # آخرین رکورد جدول
+    if pk:
+        bijak = get_object_or_404(Bijak, pk=pk)
+    else:
+        bijak = Bijak.objects.last()
+    return render(request, "bijak/final_bijak.html", {"bijak": bijak})
+
+
+# -----------------------
+# افزودن مشتری، راننده، وسیله و توضیح
+# -----------------------
 def add_customer(request):
     if request.method == 'POST':
         form = CustomerForm(request.POST)
@@ -346,11 +423,6 @@ def add_caption(request):
         form = CaptionForm()
 
     return render(request, 'add/add_caption.html', {"form": form})
-
-
-def bijak_last_view(request):
-    bijak = Bijak.objects.last()  # آخرین رکورد جدول
-    return render(request, "bijak/barnameh2.html", {"bijak": bijak})
 
 
 def save_bijak(request):
@@ -416,5 +488,66 @@ def edit_cargo(request):
     return render(request, 'edit/edit_cargo.html')
 
 
+# -----------------------
+# ویرایش بارنامه صادر شده
+# -----------------------
 def edit_bijak(request):
-    return render(request, 'secondary/print.html')
+    bijak = get_object_or_404(Bijak)
+
+    if request.method == 'POST':
+        bijak_form = ShipmentForm(request.POST, instance=bijak)
+        sender_form = CustomerForm(request.POST, prefix='sender', instance=bijak.sender)
+        receiver_form = CustomerForm(request.POST, prefix='receiver', instance=bijak.receiver)
+        driver_form = DriverForm(request.POST, prefix='driver', instance=bijak.driver)
+        vehicle_form = VehicleForm(request.POST, instance=bijak.vehicle)
+        cargo_form = CargoForm(request.POST, instance=bijak.cargo)
+
+        if all([
+            bijak_form.is_valid(),
+            sender_form.is_valid(),
+            receiver_form.is_valid(),
+            driver_form.is_valid(),
+            vehicle_form.is_valid(),
+            cargo_form.is_valid()
+        ]):
+            bijak_form.save()
+            sender_form.save()
+            receiver_form.save()
+            driver_form.save()
+            vehicle_form.save()
+            cargo_form.save()
+
+            messages.success(request, "بیجک با موفقیت ویرایش شد ✅")
+            return redirect('preview', pk=bijak.pk)  # صفحه نمایش نهایی
+    else:
+        bijak_form = ShipmentForm(instance=bijak)
+        sender_form = CustomerForm(prefix='sender', instance=bijak.sender)
+        receiver_form = CustomerForm(prefix='receiver', instance=bijak.receiver)
+        driver_form = DriverForm(prefix='driver', instance=bijak.driver)
+        vehicle_form = VehicleForm(instance=bijak.vehicle)
+        cargo_form = CargoForm(instance=bijak.cargo)
+
+    return render(request, 'edit/edit_bijak.html', {
+        'bijak_form': bijak_form,
+        'sender_form': sender_form,
+        'receiver_form': receiver_form,
+        'driver_form': driver_form,
+        'vehicle_form': vehicle_form,
+        'cargo_form': cargo_form,
+        'bijak': bijak,
+    })
+
+
+def bijak_qr(request, pk):
+    bijak = get_object_or_404(Bijak, pk=pk)
+
+    # لینک مقصد: صفحه چاپ بارنامه
+    url = request.build_absolute_uri(f"/bijak/{pk}/print/")
+
+    # تولید QR
+    qr = qrcode.make(url)
+    buffer = BytesIO()
+    qr.save(buffer, format="PNG")
+    buffer.seek(0)
+
+    return HttpResponse(buffer, content_type="image/png")
