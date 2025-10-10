@@ -10,10 +10,21 @@ from io import BytesIO
 from django.http import HttpResponse
 from .forms import CustomerForm, DriverForm, VehicleForm, CargoForm, CaptionForm, ShipmentForm
 from .models import Customer, Driver, Vehicle, Caption, Bijak
-
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import TemplateView
 
 # from .utils import num_to_word_rial
 
+
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'base.html'
+
+
+class StaffOnlyView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'bijak/issuance_form.html'
+
+    def test_func(self):
+        return self.request.user.role in ['admin', 'staff']
 
 # -----------------------
 # بیجک جدید (ثبت)

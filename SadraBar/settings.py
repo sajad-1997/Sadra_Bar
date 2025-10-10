@@ -37,10 +37,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts',
     'homePage',
     'issuance',
     'jalali_date',
 ]
+
+AUTH_USER_MODEL = 'accounts.User'
+LOGIN_REDIRECT_URL = 'dashboard_home'   # صفحه‌ای که بعد از لاگین می‌ره
+LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = 'login'
 
 # defaults
 JALALI_DATE_DEFAULTS = {
