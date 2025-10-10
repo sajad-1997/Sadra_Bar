@@ -7,15 +7,21 @@
 }
 
 body {
+    background: url('images/animation_photo.jpeg') no-repeat center center/cover;
     line-height: 1.6;
-    background: #f9f9f9;
+    /*background: #f9f9f9;*/
+    font-family: 'Vazirmatn', sans-serif;
+    /*background: #d1d1d1;*/
+    margin: 0;
+    padding: 0;
+    background-size: contain;
 }
 
-.container {
-    width: 90%;
-    max-width: 1100px;
-    margin: auto;
-}
+/*.container {*/
+/*    width: 90%;*/
+/*    max-width: 1100px;*/
+/*    margin: auto;*/
+/*}*/
 
 header {
     background: #3f4d61;
@@ -49,7 +55,6 @@ nav ul li a {
 
 .hero {
     /*background: url('https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;*/
-    background: url('images/animation_photo.jpeg') no-repeat center center/cover;
     height: 400px;
     /*display: flex;*/
     align-items: center;
@@ -148,14 +153,6 @@ footer {
     }
 }
 
-
-body {
-    font-family: 'Vazirmatn', sans-serif;
-    background: #d1d1d1;
-    margin: 0;
-    padding: 0;
-}
-
 .stamp {
     text-align: center;
     margin-top: 30px;
@@ -167,11 +164,13 @@ body {
 }
 
 .container {
-    background: white;
+    /*background: white;*/
     padding: 20px;
     max-width: 900px;
-    margin: auto;
+    margin: 10px auto;
     border-radius: 10px;
+    background: rgba(0, 0, 0, 0.5);
+
 }
 
 h2 {
