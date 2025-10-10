@@ -1,11 +1,7 @@
-import random
-
 from django.db import models
 from django.utils import timezone
 from django_jalali.db import models as jmodels
-from num2words import num2words
-from django.core.validators import MinValueValidator
-from decimal import Decimal
+from persian_tools import digits
 
 
 class Customer(models.Model):
@@ -14,7 +10,7 @@ class Customer(models.Model):
     postal = models.CharField(max_length=10, verbose_name="کد پستی", blank=True, null=True)
     phone = models.CharField(max_length=15, verbose_name="تلفن", blank=True, null=True)
     address = models.TextField(verbose_name="آدرس")
-    phone2 = models.TextField(verbose_name="تلفن۲", blank=True, null=True)
+    phone2 = models.TextField(verbose_name="تلفن دوم", blank=True, null=True)
     caption = models.TextField(verbose_name="توضیحات", blank=True, null=True)
 
     def __str__(self):
@@ -24,11 +20,12 @@ class Customer(models.Model):
 class Driver(models.Model):
     name = models.CharField(max_length=200, verbose_name="نام و نام خانوادگی راننده")
     national_id = models.CharField(max_length=50, unique=True, verbose_name="کد ملی راننده")
-    residence = models.CharField(max_length=100, verbose_name="شهر محل سکونت")
     father_name = models.CharField(max_length=50, verbose_name="نام پدر")
     birth_date = jmodels.jDateField(verbose_name="تاریخ تولد")
-    certificate_date = jmodels.jDateField(verbose_name="تاریخ صدور گواهینامه")
+    residence = models.CharField(max_length=100, verbose_name="شهر محل سکونت")
     certificate = models.CharField(max_length=50, unique=True, verbose_name="شماره گواهینامه")
+    certificate_date = jmodels.jDateField(verbose_name="تاریخ صدور گواهینامه")
+    driver_smart_card = models.CharField(max_length=50, unique=True, blank=True, null=True, verbose_name="هوشمند راننده")
     phone = models.CharField(max_length=15, verbose_name="شماره تلفن راننده")
     phone2 = models.CharField(max_length=15, verbose_name="شماره تلفن دوم")
     address = models.TextField(verbose_name="آدرس محل سکونت")
@@ -44,6 +41,8 @@ class Vehicle(models.Model):
     license_plate_alphabet = models.CharField(max_length=1, verbose_name="الفبای پلاک")
     license_plate_three_digit = models.CharField(max_length=3, verbose_name="سه رقم پلاک")
     license_plate_series = models.CharField(max_length=2, verbose_name="سری پلاک")
+    vehicle_smart_card = models.CharField(max_length=50, unique=True, blank=True, null=True, verbose_name="هوشمند ناوگان")
+
 
     def __str__(self):
         return self.type
@@ -63,10 +62,10 @@ class Cargo(models.Model):
 
 class Caption(models.Model):
     name = models.CharField(max_length=100, verbose_name="عنوان")
-    content = models.TextField()
+    content = models.TextField(verbose_name="توضیحات")
 
     def __str__(self):
-        return self.name  # فقط نام را نمایش می‌دهد
+        return self.content[:50]
 
 
 class Bijak(models.Model):
@@ -77,21 +76,51 @@ class Bijak(models.Model):
     loading_fee = models.CharField(max_length=100, verbose_name="هزینه خدمات")
     freight = models.CharField(max_length=100, verbose_name="مبلغ کرایه")
     total_fare = models.CharField(max_length=100, verbose_name="کل کرایه پرداختی در مقصد")
-    captions = models.ManyToManyField('Caption', blank=True, related_name="caption_bijaks", verbose_name="توضیحات آماده")
-    custom_caption = models.TextField(blank=True, null=True, verbose_name="توضیح دستی")
+
     sender = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='sender_bijaks')
     receiver = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='received_bijaks')
     driver = models.ForeignKey('Driver', on_delete=models.CASCADE, related_name='driverـbijaks')
     vehicle = models.ForeignKey('Vehicle', on_delete=models.CASCADE, related_name='vehicleـbijaks')
     cargo = models.ForeignKey('Cargo', on_delete=models.CASCADE, related_name='cargoـbijaks')
 
-    def value_in_words(self):
-        try:
-            return num2words(int(self.value), lang="fa") + " ریال"
-        except:
-            return ""
+    default_description = 'هرگونه آب خوردگی و خیس شدن بار به مسئولیت راننده میباشد.'
+
+    # انتخاب یک توضیح آماده از جدول Caption (تک انتخابی)
+    selected_caption = models.ForeignKey(
+        'Caption', on_delete=models.SET_NULL, null=True, blank=True, related_name='caption_bijaks'
+    )
+
+    # توضیح دستی کاربر
+    custom_caption = models.TextField(blank=True, null=True)
+
+    # توضیح نهایی که در بارنامه نمایش داده می‌شود (تجمیع شده)
+    final_description = models.TextField(blank=True, null=True)
+
+    @property
+    def num_in_words(self):
+        if self.total_fare is not None:
+            print(self.total_fare)
+            try:
+                # حذف جداکننده‌ها (ویرگول و نقطه)
+                value_str = str(self.total_fare).replace(",", "").replace(".", "")
+
+                # تبدیل به عدد صحیح
+                num = int(value_str)
+
+                return digits.convert_to_word(num) + " ریال"  # تبدیل عدد به حروف فارسی
+            except ValueError:
+                return ""
+        return ""
 
     def save(self, *args, **kwargs):
+        # ساخت توضیح نهایی از سه بخش
+        parts = [self.default_description]
+        if self.selected_caption:
+            parts.append(self.selected_caption.content)
+        if self.custom_caption:
+            parts.append(self.custom_caption)
+        self.final_description = " | ".join(parts)
+
         # اگر کد رهگیری هنوز پر نشده
         if not self.tracking_code:
             last_bijak = Bijak.objects.order_by('-id').first()

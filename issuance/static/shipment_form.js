@@ -61,7 +61,15 @@ function initShipmentCalculations() {
 
     function updateInsurance() {
         const value = parseNumber(valueField.value);
-        const insurance = Math.round(value * 0.001);
+        let insurance = 0;
+        if (value > 0) {
+            if (value <= 2000000000) {
+                insurance = 2000000;  // سقف تا ۲ میلیارد → بیمه ثابت
+            } else {
+                insurance = Math.floor(value * 0.001);  // بالای ۲ میلیارد → ۱۰ درصد
+            }
+        }
+        // const insurance = Math.round(value * 0.001);
         insuranceField.value = formatNumber(insurance);
     }
 
@@ -130,8 +138,12 @@ function initExplanations() {
             .filter(l => l);
 
         let html = "<ul>";
-        selectedOptions.forEach(item => { html += `<li>${item}</li>`; });
-        customLines.forEach(item => { html += `<li>${item}</li>`; });
+        selectedOptions.forEach(item => {
+            html += `<li>${item}</li>`;
+        });
+        customLines.forEach(item => {
+            html += `<li>${item}</li>`;
+        });
         html += "</ul>";
 
         previewBox.innerHTML = html;
@@ -141,7 +153,7 @@ function initExplanations() {
 
     // برای هر گزینه: mousedown (اصلی) + fallback click/touchstart
     Array.from(select.options).forEach(opt => {
-        const toggleHandler = function(e) {
+        const toggleHandler = function (e) {
             // جلوگیری از رفتار پیش‌فرض مرورگر تا بتوانیم selection را خودمان مدیریت کنیم
             e.preventDefault();
 
@@ -162,16 +174,16 @@ function initExplanations() {
 
         opt.addEventListener('mousedown', toggleHandler);
         opt.addEventListener('click', toggleHandler);            // fallback برای برخی مرورگرها
-        opt.addEventListener('touchstart', function(e){         // موبایل: جلوگیری از native picker در برخی پیاده‌سازی‌ها
+        opt.addEventListener('touchstart', function (e) {         // موبایل: جلوگیری از native picker در برخی پیاده‌سازی‌ها
             // توجه: touchstart باید passive:false باشد تا preventDefault کار کند؛
             // اگر مرورگر اجازه نده، ممکن است native picker باز شود — در آن صورت باید از UI دلخواه استفاده کنید.
             e.preventDefault();
             toggleHandler.call(this, e);
-        }, { passive: false });
+        }, {passive: false});
     });
 
     // پشتیبانی ساده از صفحه‌کلید: Space/Enter برای toggle روی گزینهٔ فعلی
-    select.addEventListener('keydown', function(e){
+    select.addEventListener('keydown', function (e) {
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             const idx = select.selectedIndex;
@@ -206,7 +218,7 @@ function enableSearch(inputId, resultsId, hiddenId, searchUrl, extraOptions = {}
     const $results = $(`#${resultsId}`);
     const $hidden = $(`#${hiddenId}`);
 
-    $input.on('keyup', function() {
+    $input.on('keyup', function () {
         let query = $input.val().trim();
         if (query.length === 0) {
             $results.empty().hide();
@@ -215,8 +227,8 @@ function enableSearch(inputId, resultsId, hiddenId, searchUrl, extraOptions = {}
 
         $.ajax({
             url: searchUrl,
-            data: { q: query },
-            success: function(data) {
+            data: {q: query},
+            success: function (data) {
                 let html = "";
                 if (data.results.length > 0) {
                     data.results.forEach(item => {
@@ -238,7 +250,7 @@ function enableSearch(inputId, resultsId, hiddenId, searchUrl, extraOptions = {}
         });
     });
 
-    $(document).on('click', `#${resultsId} .list-group-item`, function() {
+    $(document).on('click', `#${resultsId} .list-group-item`, function () {
         const $item = $(this);
         const id = $item.data('id');
         const name = $item.data('name');
@@ -256,8 +268,8 @@ function enableSearch(inputId, resultsId, hiddenId, searchUrl, extraOptions = {}
         if (extraOptions.updateVehicleAjax) {
             $.ajax({
                 url: extraOptions.updateVehicleAjax,
-                data: { driver_id: id },
-                success: function(res) {
+                data: {driver_id: id},
+                success: function (res) {
                     if (res.success) {
                         $("#first-number").text(res.vehicle.two_digit);
                         $("#letter").text(res.vehicle.alphabet);

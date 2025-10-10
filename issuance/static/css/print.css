@@ -29,9 +29,9 @@ body {
 
 /* Header */
 .header-section {
-    border-bottom: 3px dashed #999;
+    /*border-bottom: 3px dashed #999;*/
     /* padding-bottom: 10px; */
-    margin-bottom: 15px;
+    /*margin-bottom: 15px;*/
     display: grid;
     grid-template-columns: 0.8fr 1fr 0.8fr;
     /* gap: 20px; */
@@ -54,10 +54,10 @@ body {
 
 /* Form fields */
 .form-field {
-    margin-bottom: 8px;
+    margin-right: 5px;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 2px;
 }
 
 .form-field-header {
@@ -77,8 +77,9 @@ body {
 }
 
 .form-field label {
-    min-width: 60px;
+    /*min-width: 60px;*/
     font-size: 12px;
+    font-weight: bold;
     font-family: sans-serif;
 }
 
@@ -95,8 +96,17 @@ body {
 .form-table {
     width: 100%;
     border-collapse: separate;
-    margin-bottom: 15px;
-    border-spacing: 5px 0px;
+    /*margin-bottom: 15px;*/
+    border-spacing: 2px 1px;
+}
+
+.form-table-cargo {
+    width: 100%;
+    border-collapse: separate;
+    margin-bottom: 10px;
+    border: 1px solid #000;
+    /*border-spacing: 5px 0px;*/
+    margin-top: 5px;
 }
 
 .form-table tr {
@@ -109,30 +119,50 @@ body {
     /* text-align: center; */
     font-size: 11px;
     font-weight: bold;
-    border-right: 1px dashed;
+    border-bottom: 1px dashed;
+}
+
+.table-header-cargo {
+    background-color: #f0f0f0;
+    padding: 4px;
+    text-align: center;
+    /*font-size: 11px;*/
+    font-weight: bold;
+    /*border-right: 1px dashed;*/
 }
 
 .table-cell {
     /* width: 100%; */
-    border-right: 1px dashed;
+    /*border-bottom: 1px dashed;*/
     background: transparent;
     font-size: 12px;
     /* height: 24px; */
-    padding: 2px;
+    padding-right: 4px;
+}
+
+.table-cell-cargo {
+    /* width: 100%; */
+    /*border-right: 1px dashed;*/
+    background: transparent;
+    font-size: 12px;
+    /* height: 24px; */
+    padding: 1px;
+    text-align: center;
+
 }
 
 /* Bottom section */
 .bottom-section {
     display: flex;
-    gap: 10px;
-    margin: 20px 10px 5px 10px;
+    gap: 5px;
+    margin: 15px 0px 0px 0px;
     text-align: center;
 }
 
 /* Signature */
 .signature-section {
     border-top: 2px dashed #ccc;
-    padding: 15px 10px;
+    padding: 2px 10px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
@@ -155,6 +185,19 @@ body {
     margin: 15px 0;
     display: flex;
     flex-direction: column;
+}
+
+/* Bijak section */
+.bijak-section {
+    text-align: center;
+    margin: 15px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.bijak-section label {
+    font-size: 12px !important;
+    font-weight: bold;
 }
 
 /* Controls */
@@ -248,6 +291,7 @@ body {
     }
 
     th {
+        background-color: #f0f0f0;
         color: #545b62 !important;
     }
 
@@ -256,3 +300,7 @@ body {
         margin: 20px;
     }
 }
+
+
+/*09155207643*/
+/*09153164367*/

@@ -57,28 +57,31 @@
     </div>
 
     <button type="submit" class="btn btn-success">ذخیره</button>
+    <div class="btn btn-success">
+        <a href="{% url 'create_new' %}">صفحه اصلی</a>
+    </div>
 </form>
 
 {% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-success" id="success-message">
-      {{ message }}
-    </div>
-  {% endfor %}
+    {% for message in messages %}
+        <div class="alert alert-success" id="success-message">
+            {{ message }}
+        </div>
+    {% endfor %}
 {% endif %}
 
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  // پیام بعد از چند ثانیه محو بشه
-  setTimeout(function(){
-      let msg = document.getElementById("success-message");
-      if (msg) {
-          msg.style.transition = "opacity 1s";
-          msg.style.opacity = 0;
-      }
-  }, 3000); // شروع محو شدن بعد از 3 ثانیه
+    // پیام بعد از چند ثانیه محو بشه
+    setTimeout(function () {
+        let msg = document.getElementById("success-message");
+        if (msg) {
+            msg.style.transition = "opacity 1s";
+            msg.style.opacity = 0;
+        }
+    }, 3000); // شروع محو شدن بعد از 3 ثانیه
 </script>
 </body>
 </html>

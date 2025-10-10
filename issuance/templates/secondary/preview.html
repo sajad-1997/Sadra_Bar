@@ -42,11 +42,26 @@
             border-right: 4px solid #0d6efd;
             padding-right: 8px;
         }
+
+        .btn {
+            min-width: 120px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container my-4">
+
+    <div class="text-center my-4">
+        <!-- دکمه چاپ -->
+        <a href="{% url 'print' bijak.pk %}" class="btn btn-primary" target="_blank">
+            چاپ بیجک
+        </a>
+        <!-- دکمه ویرایش -->
+{#        <a href="{% url 'edit_bijak' bijak.pk %}" class="btn btn-warning mx-2">#}
+            ویرایش بیجک
+        </a>
+    </div>
 
     <!-- کارت اصلی بیجک -->
     <div class="bijak-card">
@@ -186,7 +201,7 @@
                     <th>شرح توضیحات</th>
                 </tr>
                 <tr>
-                    <td>{{  }}</td>
+                    <td>{{ bijak.final_description }}</td>
                 </tr>
             </table>
 

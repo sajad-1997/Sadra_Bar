@@ -50,12 +50,12 @@
         <label>نام مشتری:</label>
         <input type="text" id="customer-input" name="name" class="form-control">
         <div id="customer-results" class="list-group"
-             style="display:none; position:absolute; z-index:1000; width:100%;"></div>
+             style="display:none; z-index:1000; width:100%;"></div>
     </div>
 
     <div class="mb-3">
         <label>شناسه/کد ملی:</label>
-        <input type="text" id="customer-national" name="national_id" class="form-control">
+        <input type="text" id="customer-national" name="national" class="form-control">
     </div>
 
     <div class="mb-3">
@@ -74,6 +74,9 @@
     </div>
 
     <button type="submit" class="btn btn-success">ذخیره</button>
+    <button type="button" id="add-to-customer" class="btn btn-warning">
+        افزودن اطلاعات به همین مشتری
+    </button>
 </form>
 
 <p id="msg"></p>
@@ -127,12 +130,12 @@
                                     class="list-group-item list-group-item-action"
                                     data-id="${item.id}"
                                     data-name="${item.name}"
-                                    data-national_id="${item.national_id || ''}"
+                                    data-national="${item.national_id || ''}"
                                     data-postal="${item.postal || ''}"
                                     data-phone="${item.phone || ''}"
                                     data-address="${item.address || ''}">
                                     <strong>${item.name}</strong>
-                                    ${item.phone ? " - " + item.phone : ""}
+                                    ${item.phone ? " -{" + item.address + "}": "📂"}
                                  </button>`;
                         });
                     } else {
@@ -155,7 +158,7 @@
         function chooseItem(item) {
             $("#customer-id").val(item.data("id"));
             $("#customer-input").val(item.data("name"));
-            $("#customer-national_id").val(item.data("national_id"));
+            $("#customer-national").val(item.data("national"));
             $("#customer-postal").val(item.data("postal"));
             $("#customer-phone").val(item.data("phone"));
             $("#customer-address").val(item.data("address"));
@@ -166,7 +169,7 @@
         function clearForm(name = "") {
             $("#customer-id").val("");
             $("#customer-input").val(name);
-            $("#customer-national_id").val("");
+            $("#customer-national").val("");
             $("#customer-postal").val("");
             $("#customer-phone").val("");
             $("#customer-address").val("");
@@ -188,6 +191,34 @@
                 success: function (resp) {
                     if (resp.success) {
                         $("#msg").text("با موفقیت ذخیره شد (ID: " + resp.id + ")");
+                    } else {
+                        $("#msg").text("خطا: " + resp.error);
+                    }
+                },
+                error: function () {
+                    $("#msg").text("مشکلی در ارتباط با سرور پیش آمد");
+                }
+            });
+        });
+
+        // افزودن اطلاعات به همین مشتری (ایجاد رکورد جدید)
+        $("#add-to-customer").click(function () {
+            let customerId = $("#customer-id").val();
+
+            if (!customerId) {
+                $("#msg").text("ابتدا یک مشتری را انتخاب کنید.");
+                return;
+            }
+
+            $.ajax({
+                url: "{% url 'duplicate_customer' %}",   // ویوی جدید در جنگو
+                type: "POST",
+                data: $("#customer-form").serialize(),   // تمام فیلدهای فرم
+                headers: {"X-CSRFToken": "{{ csrf_token }}"},
+                success: function (resp) {
+                    if (resp.success) {
+                        $("#msg").text("رکورد جدید برای مشتری ایجاد شد (ID: " + resp.new_id + ")");
+                        $("#customer-id").val(resp.new_id);  // می‌تونی انتخاب کنی روی رکورد جدید بمونه
                     } else {
                         $("#msg").text("خطا: " + resp.error);
                     }

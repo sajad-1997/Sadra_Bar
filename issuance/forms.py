@@ -86,7 +86,7 @@ class CaptionForm(forms.ModelForm):
         queryset=Caption.objects.all(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
-        label="انتخاب توضیحات آماده"
+        # label="انتخاب توضیحات آماده"
     )
     custom_explanation = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 3}),
@@ -103,13 +103,13 @@ class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
     tracking_code_display = forms.CharField(label="کد رهگیری", required=False, disabled=True)
     issuance_date_display = forms.CharField(label="تاریخ صدور", required=False, disabled=True)
 
-    # فیلد چندتایی توضیحات
-    captions = forms.ModelMultipleChoiceField(
-        queryset=Caption.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
-        required=False,
-        label="انتخاب توضیحات"
-    )
+    # # فیلد چندتایی توضیحات
+    # captions = forms.ModelMultipleChoiceField(
+    #     queryset=Caption.objects.all(),
+    #     widget=forms.CheckboxSelectMultiple,
+    #     required=False,
+    #     label="انتخاب توضیحات"
+    # )
 
     class Meta:
         model = Bijak
