@@ -1,0 +1,113 @@
+{% extends 'homePage/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">📊 گزارش بارنامه‌ها</h2>
+
+    <!-- 🔹 فیلتر -->
+    <form method="get" class="card p-3 mb-4">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <input type="text" name="sender" value="{{ filters.sender }}" class="form-control" placeholder="نام فرستنده">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="receiver" value="{{ filters.receiver }}" class="form-control" placeholder="نام گیرنده">
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="start_date" name="start_date" value="{{ filters.start_date }}" class="form-control" placeholder="تاریخ شروع">
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="end_date" name="end_date" value="{{ filters.end_date }}" class="form-control" placeholder="تاریخ پایان">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">اعمال فیلتر</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- 🔹 آمار کلی -->
+    <div class="row text-center mb-4">
+        <div class="col-md-3"><div class="card p-3"><strong>امروز:</strong> {{ daily_count }}</div></div>
+        <div class="col-md-3"><div class="card p-3"><strong>این هفته:</strong> {{ weekly_count }}</div></div>
+        <div class="col-md-3"><div class="card p-3"><strong>این ماه:</strong> {{ monthly_count }}</div></div>
+        <div class="col-md-3"><div class="card p-3"><strong>امسال:</strong> {{ yearly_count }}</div></div>
+    </div>
+
+    <!-- 🔹 نمودار -->
+    <div class="card p-4 mb-4">
+        <canvas id="chart" height="100"></canvas>
+    </div>
+
+    <!-- 🔹 جدول داده‌ها -->
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>کد رهگیری</th>
+                <th>فرستنده</th>
+                <th>گیرنده</th>
+                <th>تاریخ صدور</th>
+                <th>کرایه کل</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in bijaks %}
+            <tr>
+                <td>{{ b.tracking_code }}</td>
+                <td>{{ b.sender.name }}</td>
+                <td>{{ b.receiver.name }}</td>
+                <td>{{ b.issuance_date }}</td>
+                <td>{{ b.total_fare }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center">هیچ داده‌ای یافت نشد</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 📅 Persian Datepicker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+<script>
+$(document).ready(function(){
+    $("#start_date").persianDatepicker({
+        format: 'YYYY-MM-DD',
+        initialValue: {{ filters.start_date|yesno:"true,false" }},
+        autoClose: true,
+        calendarType: "persian",
+    });
+    $("#end_date").persianDatepicker({
+        format: 'YYYY-MM-DD',
+        initialValue: {{ filters.end_date|yesno:"true,false" }},
+        autoClose: true,
+        calendarType: "persian",
+    });
+});
+</script>
+
+<!-- 📊 Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('chart');
+const labels = [{% for d in chart_data %}'{{ d.issuance_date }}',{% endfor %}];
+const data = [{% for d in chart_data %}{{ d.count }},{% endfor %}];
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'تعداد بارنامه‌ها',
+            data: data,
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3
+        }]
+    }
+});
+</script>
+{% endblock %}
