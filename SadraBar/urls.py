@@ -15,11 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.shortcuts import render
 from django.urls import path, include
 
+
+def forbidden_view(request):
+    return render(request, 'accounts/forbidden.html', status=403)
+
+
 urlpatterns = [
-    path('accounts/', include('accounts.urls')),
     path('admin/', admin.site.urls),
+    path('accounts/', include('accounts.urls')),
+    path('dashboard/', include('dashboard.urls')),
     path('', include('homePage.urls')),
-    path('issuance/', include('issuance.urls'))
+    path('issuance/', include('issuance.urls')),
+    path('forbidden/', forbidden_view, name='forbidden'),
+
 ]

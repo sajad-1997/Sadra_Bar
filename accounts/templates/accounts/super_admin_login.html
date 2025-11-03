@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ورود</title>
+    <title>ورود سوپر ادمین</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600&display=swap');
@@ -160,16 +160,16 @@
 <body>
     <div class="login-container">
         <div class="logo"></div>
-        <h2>ورود کاربران محترم</h2>
+        <h2>ورود سوپر ادمین</h2>
         <form method="post">
             {% csrf_token %}
             {{ form.non_field_errors }}
             <input type="text" name="username" placeholder="نام کاربری" required>
             <input type="password" name="password" placeholder="رمز عبور" required>
-            <button type="submit">ورود به پنل عملیاتی</button>
+            <button type="submit">ورود به پنل مدیریت</button>
         </form>
         <a href="#" class="forgot-password">فراموشی رمز عبور؟</a>
-        <p class="footer-text">© سامانه مدیریت بارنامه صدرا بار خراسان | نسخه 1.0</p>
+        <p class="footer-text">© سامانه مدیریت بارنامه | نسخه 1.0</p>
     </div>
 </body>
 </html>

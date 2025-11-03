@@ -1,30 +1,34 @@
+from io import BytesIO
+
+import qrcode
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpResponse
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-import qrcode
-from io import BytesIO
-from django.http import HttpResponse
-from .forms import CustomerForm, DriverForm, VehicleForm, CargoForm, CaptionForm, ShipmentForm
-from .models import Customer, Driver, Vehicle, Caption, Bijak
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import TemplateView
+
+from .forms import *
+from .models import Customer, Driver, Vehicle, Caption, Bijak
+
 
 # from .utils import num_to_word_rial
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
-    template_name = 'base.html'
+    template_name = 'issuance/base.html'
 
 
 class StaffOnlyView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
-    template_name = 'bijak/issuance_form.html'
+    template_name = 'issuance/bijak/issuance_form.html'
 
     def test_func(self):
         return self.request.user.role in ['admin', 'staff']
+
 
 # -----------------------
 # بیجک جدید (ثبت)
@@ -81,6 +85,9 @@ def create_new(request):
                     Caption.objects.create(content=manual_text)
                     bijak.custom_caption = manual_text
 
+                # 🔹 افزودن کاربر ایجادکننده
+                bijak.created_by = request.user
+
                 # ذخیره بیجک
                 bijak.save()
 
@@ -102,7 +109,7 @@ def create_new(request):
     # پاس دادن تمام توضیحات موجود به قالب
     captions = Caption.objects.all().order_by('-id')
 
-    return render(request, 'bijak/issuance_form.html', {
+    return render(request, 'issuance/bijak/issuance_form.html', {
         'shipment_form': shipment_form,
         'cargo_form': cargo_form,
         'captions': captions,
@@ -132,10 +139,12 @@ def search_shipment(request):
             Q(vehicle__license_plate_alphabet__icontains=query) |
             Q(vehicle__license_plate_series__icontains=query) |
             Q(cargo__name__icontains=query) |
+            Q(cargo__origin__icontains=query) |
+            Q(cargo__destination__icontains=query) |
             Q(selected_caption__content__icontains=query)  # تغییر به selected_caption
         )
 
-    return render(request, 'bijak/bijak_search.html', {
+    return render(request, 'issuance/bijak/bijak_search.html', {
         'shipments': shipments,
         'query': query
     })
@@ -337,11 +346,11 @@ def search_vehicle(request):
 
 # page render defs
 def success_page(request):
-    return render(request, 'secondary/success.html')
+    return render(request, 'issuance/secondary/success.html')
 
 
 def search_page(request):
-    return render(request, 'bijak/final_bijak.html')
+    return render(request, 'issuance/bijak/final_bijak.html')
 
 
 # -----------------------
@@ -351,14 +360,14 @@ def print_page(request, pk):
     shipment = Bijak.objects.select_related(
         'sender', 'receiver', 'driver', 'vehicle', 'cargo', 'selected_caption'
     ).get(pk=pk)
-    return render(request, 'secondary/print.html', {'shipment': shipment})
+    return render(request, 'issuance/secondary/print.html', {'shipment': shipment})
 
 
 def preview_page(request, pk):
     bijak = Bijak.objects.select_related(
         'sender', 'receiver', 'driver', 'vehicle', 'cargo', 'selected_caption'
     ).get(pk=pk)
-    return render(request, 'secondary/preview.html', {'bijak': bijak})
+    return render(request, 'issuance/secondary/preview.html', {'bijak': bijak})
 
 
 def bijak_last_view(request, pk):
@@ -367,7 +376,7 @@ def bijak_last_view(request, pk):
         bijak = get_object_or_404(Bijak, pk=pk)
     else:
         bijak = Bijak.objects.last()
-    return render(request, "bijak/final_bijak.html", {"bijak": bijak})
+    return render(request, "issuance/bijak/final_bijak.html", {"bijak": bijak})
 
 
 # -----------------------
@@ -381,7 +390,7 @@ def add_customer(request):
             return redirect('create_new')  # بازگشت به فرم بارنامه
     else:
         form = CustomerForm()
-    return render(request, 'add/add_customer.html', {"form": form})
+    return render(request, 'issuance/add/add_customer.html', {"form": form})
 
 
 def add_driver(request):
@@ -392,7 +401,7 @@ def add_driver(request):
             return redirect('create_new')  # بازگشت به فرم بارنامه
     else:
         form = DriverForm()
-    return render(request, 'add/add_driver.html', {"form": form})
+    return render(request, 'issuance/add/add_driver.html', {"form": form})
 
 
 def add_vehicle(request):
@@ -405,7 +414,7 @@ def add_vehicle(request):
             return redirect('create_new')  # بازگشت به فرم بارنامه
     else:
         form = VehicleForm()
-    return render(request, "add/add_vehicle.html", {"form": form})
+    return render(request, "issuance/add/add_vehicle.html", {"form": form})
 
 
 def get_vehicle_by_driver(request):
@@ -433,7 +442,7 @@ def add_caption(request):
     else:
         form = CaptionForm()
 
-    return render(request, 'add/add_caption.html', {"form": form})
+    return render(request, 'issuance/add/add_caption.html', {"form": form})
 
 
 def save_bijak(request):
@@ -484,19 +493,19 @@ def save_bijak(request):
 
 
 def edit_customer(request):
-    return render(request, 'edit/edit_customer.html')
+    return render(request, 'issuance/edit/edit_customer.html')
 
 
 def edit_driver(request):
-    return render(request, 'edit/edit_driver.html')
+    return render(request, 'issuance/edit/edit_driver.html')
 
 
 def edit_vehicle(request):
-    return render(request, 'edit/edit_vehicle.html')
+    return render(request, 'issuance/edit/edit_vehicle.html')
 
 
 def edit_cargo(request):
-    return render(request, 'edit/edit_cargo.html')
+    return render(request, 'issuance/edit/edit_cargo.html')
 
 
 # -----------------------
@@ -538,7 +547,7 @@ def edit_bijak(request):
         vehicle_form = VehicleForm(instance=bijak.vehicle)
         cargo_form = CargoForm(instance=bijak.cargo)
 
-    return render(request, 'edit/edit_bijak.html', {
+    return render(request, 'issuance/edit/edit_bijak.html', {
         'bijak_form': bijak_form,
         'sender_form': sender_form,
         'receiver_form': receiver_form,
@@ -549,11 +558,14 @@ def edit_bijak(request):
     })
 
 
+# -----------------------
+# بارکد بارنامه صادر شده
+# -----------------------
 def bijak_qr(request, pk):
     bijak = get_object_or_404(Bijak, pk=pk)
 
     # لینک مقصد: صفحه چاپ بارنامه
-    url = request.build_absolute_uri(f"/bijak/{pk}/print/")
+    url = request.build_absolute_uri(f"/Barnameh/{pk}/print/")
 
     # تولید QR
     qr = qrcode.make(url)

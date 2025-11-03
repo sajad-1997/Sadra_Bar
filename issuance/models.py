@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django_jalali.db import models as jmodels
 from persian_tools import digits
+from django.conf import settings
 
 
 class Customer(models.Model):
@@ -82,6 +83,13 @@ class Bijak(models.Model):
     driver = models.ForeignKey('Driver', on_delete=models.CASCADE, related_name='driverـbijaks')
     vehicle = models.ForeignKey('Vehicle', on_delete=models.CASCADE, related_name='vehicleـbijaks')
     cargo = models.ForeignKey('Cargo', on_delete=models.CASCADE, related_name='cargoـbijaks')
+
+    status = models.CharField(max_length=30, choices=[
+        ('draft', 'پیش‌نویس'),
+        ('issued', 'صادر شده'),
+        ('sent', 'ارسال شده'),
+    ])
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     default_description = 'هرگونه آب خوردگی و خیس شدن بار به مسئولیت راننده میباشد.'
 

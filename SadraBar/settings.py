@@ -38,14 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounts',
+    'staff',
+    'dashboard',
     'homePage',
     'issuance',
     'jalali_date',
+    'report',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
-LOGIN_REDIRECT_URL = 'dashboard_home'   # صفحه‌ای که بعد از لاگین می‌ره
-LOGOUT_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'   # صفحه‌ای که بعد از لاگین می‌ره
+LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = 'login'
 
 # defaults

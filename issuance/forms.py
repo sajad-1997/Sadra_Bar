@@ -98,7 +98,6 @@ class CaptionForm(forms.ModelForm):
 class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
     numeric_fields = ['tracking_code', 'issuance_date', 'value', 'total_fare', 'insurance', 'loading_fee', 'freight']
 
-
     # فیلدهای نمایشی
     tracking_code_display = forms.CharField(label="کد رهگیری", required=False, disabled=True)
     issuance_date_display = forms.CharField(label="تاریخ صدور", required=False, disabled=True)
@@ -114,7 +113,7 @@ class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
     class Meta:
         model = Bijak
         exclude = ('tracking_code', 'issuance_date')
-        fields = ('value', 'total_fare', 'insurance', 'loading_fee', 'freight', )  # فیلدهای مدلی
+        fields = ('value', 'total_fare', 'insurance', 'loading_fee', 'freight',)  # فیلدهای مدلی
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

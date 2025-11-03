@@ -1,6 +1,7 @@
-from django.urls import path
+from django.urls import path, include
 
 from .views1 import *
+from report.views import *
 
 # from . import views
 
@@ -36,4 +37,5 @@ urlpatterns = [
     path("ajax/get-vehicle/", get_vehicle_by_driver, name="get_vehicle_by_driver"),
     path("bijak/<int:pk>/qr/", bijak_qr, name="bijak_qr"),
 
+    path('report/', include('report.urls')),
 ]
