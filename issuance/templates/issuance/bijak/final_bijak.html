@@ -1,12 +1,14 @@
 {% load static %}
 {% load persian_numbers %}
+{% load jalali_tags %}
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>فرم حمل و نقل - A5 افقی</title>
-    <link rel="stylesheet" href="{% static 'css/print.css' %}">
+    <link rel="stylesheet" href="{% static 'issuance/css/print.css' %}">
 
 </head>
 <body>
@@ -60,7 +62,7 @@
                     <div>
                         <label>تاریخ:</label>
                         <span>
-                        {{ bijak.issuance_date|persian_numbers }}
+                        {{ jalali_issuance_date|persian_numbers }}
                         </span>
                     </div>
                 </div>
@@ -130,10 +132,10 @@
                 <tr>
                     <td class="table-cell">{{ bijak.driver.name }}</td>
                     <td class="table-cell">{{ bijak.driver.national_id|persian_numbers }}</td>
-                    <td class="table-cell">{{ bijak.driver.birth_date|persian_numbers }}</td>
+                    <td class="table-cell">{{ jalali_birth_date|persian_numbers }}</td>
                     <td class="table-cell">{{ bijak.driver.father_name }}</td>
                     <td class="table-cell">{{ bijak.driver.certificate|persian_numbers }}</td>
-                    <td class="table-cell">{{ bijak.driver.certificate_date|persian_numbers }}</td>
+                    <td class="table-cell">{{ jalali_license_issue_date|persian_numbers }}</td>
                 </tr>
             </table>
             <table class="form-table">

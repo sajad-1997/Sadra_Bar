@@ -1,7 +1,8 @@
 from io import BytesIO
-
+import jdatetime
 import qrcode
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
 from django.db.models import Q
@@ -9,6 +10,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
@@ -30,6 +32,8 @@ class StaffOnlyView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         return self.request.user.role in ['admin', 'staff']
 
 
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 # -----------------------
 # بیجک جدید (ثبت)
 # -----------------------
@@ -121,7 +125,8 @@ def to_words_view(request):
     words = num_to_word_rial(num)
     return JsonResponse({"words": words})
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 # -----------------------
 # جستجوی بیجک
 # -----------------------
@@ -149,7 +154,8 @@ def search_shipment(request):
         'query': query
     })
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 # -----------------------
 # سایر جستجوها (مشتری، راننده، وسیله)
 # -----------------------
@@ -177,61 +183,8 @@ def search_customer(request):
 
     return JsonResponse({"results": results})
 
-
-@csrf_exempt
-def save_customer(request):
-    if request.method == "POST":
-        customer_id = request.POST.get("id")
-        name = request.POST.get("name")
-        national_id = request.POST.get("national_id")
-        postal = request.POST.get("postal")
-        phone = request.POST.get("phone")
-        address = request.POST.get("address")
-
-        if customer_id:  # اگر رکورد وجود داشت → ویرایش
-            try:
-                customer = Customer.objects.get(id=customer_id)
-                customer.name = name
-                customer.national_id = national_id
-                customer.postal = postal
-                customer.phone = phone
-                customer.address = address
-                customer.save()
-            except Customer.DoesNotExist:
-                return JsonResponse({"success": False, "error": "مشتری یافت نشد"})
-        else:  # ایجاد رکورد جدید
-            customer = Customer.objects.create(
-                name=name,
-                national_id=national_id,
-                postal=postal,
-                phone=phone,
-                address=address,
-            )
-
-        return JsonResponse({"success": True, "id": customer.id})
-
-    return JsonResponse({"success": False, "error": "Invalid request"})
-
-
-def duplicate_customer(request):
-    if request.method == "POST":
-        try:
-            # رکورد جدید بساز
-            new_customer = Customer.objects.create(
-                name=request.POST.get("name"),
-                national_id=request.POST.get("national_id"),
-                postal=request.POST.get("postal"),
-                phone=request.POST.get("phone"),
-                address=request.POST.get("address"),
-            )
-
-            return JsonResponse({"success": True, "new_id": new_customer.id})
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)})
-
-    return JsonResponse({"success": False, "error": "درخواست نامعتبر"})
-
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def search_driver(request):
     query = request.GET.get("q", "").strip()
 
@@ -272,6 +225,64 @@ def search_driver(request):
     return JsonResponse({"results": results})
 
 
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
+@csrf_exempt
+def save_customer(request):
+    if request.method == "POST":
+        customer_id = request.POST.get("id")
+        name = request.POST.get("name")
+        national_id = request.POST.get("national_id")
+        postal = request.POST.get("postal")
+        phone = request.POST.get("phone")
+        address = request.POST.get("address")
+
+        if customer_id:  # اگر رکورد وجود داشت → ویرایش
+            try:
+                customer = Customer.objects.get(id=customer_id)
+                customer.name = name
+                customer.national_id = national_id
+                customer.postal = postal
+                customer.phone = phone
+                customer.address = address
+                customer.save()
+            except Customer.DoesNotExist:
+                return JsonResponse({"success": False, "error": "مشتری یافت نشد"})
+        else:  # ایجاد رکورد جدید
+            customer = Customer.objects.create(
+                name=name,
+                national_id=national_id,
+                postal=postal,
+                phone=phone,
+                address=address,
+            )
+
+        return JsonResponse({"success": True, "id": customer.id})
+
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
+def duplicate_customer(request):
+    if request.method == "POST":
+        try:
+            # رکورد جدید بساز
+            new_customer = Customer.objects.create(
+                name=request.POST.get("name"),
+                national_id=request.POST.get("national_id"),
+                postal=request.POST.get("postal"),
+                phone=request.POST.get("phone"),
+                address=request.POST.get("address"),
+            )
+
+            return JsonResponse({"success": True, "new_id": new_customer.id})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "درخواست نامعتبر"})
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 @csrf_exempt
 def save_driver(request):
     if request.method == "POST":
@@ -337,7 +348,8 @@ def save_driver(request):
 #         })
 #     return JsonResponse({"results": results})
 #
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def search_vehicle(request):
     q = request.GET.get("q", "")
     results = Vehicle.objects.filter(plate__icontains=q)[:10]
@@ -360,25 +372,53 @@ def print_page(request, pk):
     shipment = Bijak.objects.select_related(
         'sender', 'receiver', 'driver', 'vehicle', 'cargo', 'selected_caption'
     ).get(pk=pk)
-    return render(request, 'issuance/secondary/print.html', {'shipment': shipment})
 
+    # چون issuance_date از نوع jDateField هست، مستقیم قابل فرمت‌دهی به شکل شمسی است
+    jalali_date = jdatetime.date.fromgregorian(date=shipment.issuance_date).strftime("%Y/%m/%d")
 
+    context = {
+        'shipment': shipment,
+        'jalali_date': jalali_date,
+    }
+    print("issuance_date:", shipment.issuance_date, type(shipment.issuance_date))
+    return render(request, 'issuance/secondary/print.html', context)
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def preview_page(request, pk):
     bijak = Bijak.objects.select_related(
         'sender', 'receiver', 'driver', 'vehicle', 'cargo', 'selected_caption'
     ).get(pk=pk)
     return render(request, 'issuance/secondary/preview.html', {'bijak': bijak})
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def bijak_last_view(request, pk):
     # bijak = Bijak.objects.last()  # آخرین رکورد جدول
     if pk:
         bijak = get_object_or_404(Bijak, pk=pk)
     else:
         bijak = Bijak.objects.last()
-    return render(request, "issuance/bijak/final_bijak.html", {"bijak": bijak})
 
+    # دسترسی به راننده
+    driver = bijak.driver
 
+    # تبدیل تمام تاریخ‌ها به رشته شمسی
+    issuance_date = bijak.issuance_date.strftime("%Y/%m/%d")
+    birth_date = driver.birth_date.strftime("%Y/%m/%d")
+    license_issue_date = driver.certificate_date.strftime("%Y/%m/%d")
+
+    context = {
+        'bijak': bijak,
+        'jalali_issuance_date': issuance_date,
+        'jalali_birth_date': birth_date,
+        'jalali_license_issue_date': license_issue_date,
+    }
+
+    return render(request, "issuance/bijak/final_bijak.html", context)
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 # -----------------------
 # افزودن مشتری، راننده، وسیله و توضیح
 # -----------------------
@@ -392,7 +432,8 @@ def add_customer(request):
         form = CustomerForm()
     return render(request, 'issuance/add/add_customer.html', {"form": form})
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def add_driver(request):
     if request.method == 'POST':
         form = DriverForm(request.POST)
@@ -403,7 +444,8 @@ def add_driver(request):
         form = DriverForm()
     return render(request, 'issuance/add/add_driver.html', {"form": form})
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def add_vehicle(request):
     if request.method == "POST":
         form = VehicleForm(request.POST)
@@ -431,7 +473,8 @@ def get_vehicle_by_driver(request):
     except Vehicle.DoesNotExist:
         return JsonResponse({"success": False, "error": "وسیله‌ای برای این راننده پیدا نشد"})
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def add_caption(request):
     if request.method == "POST":
         form = CaptionForm(request.POST)
@@ -491,23 +534,28 @@ def save_bijak(request):
 #     return render(request, 'edit/edit_customer.html', {"form": form})
 #
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def edit_customer(request):
     return render(request, 'issuance/edit/edit_customer.html')
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def edit_driver(request):
     return render(request, 'issuance/edit/edit_driver.html')
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def edit_vehicle(request):
     return render(request, 'issuance/edit/edit_vehicle.html')
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 def edit_cargo(request):
     return render(request, 'issuance/edit/edit_cargo.html')
 
-
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
 # -----------------------
 # ویرایش بارنامه صادر شده
 # -----------------------

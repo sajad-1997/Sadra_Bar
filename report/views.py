@@ -1,8 +1,10 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import user_passes_test
-from issuance.models import Bijak
 import jdatetime
+from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Count
+from django.shortcuts import render
+
+from issuance.models import Bijak
+
 
 def is_admin_or_manager(user):
     return user.is_superuser or user.groups.filter(name__in=['مدیر', 'admin']).exists()
@@ -69,8 +71,8 @@ def report_dashboard(request):
     # -----------------------
     chart_data = (
         bijaks.values('issuance_date')
-        .annotate(count=Count('id'))
-        .order_by('issuance_date')
+            .annotate(count=Count('id'))
+            .order_by('issuance_date')
     )
 
     context = {

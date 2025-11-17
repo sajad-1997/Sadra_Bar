@@ -1,5 +1,5 @@
 // ================================================
-// shipment.js - نسخه بهینه و آماده برای فایل خارجی
+// shipment_combined.js - نسخه ترکیبی و بهینه
 // ================================================
 
 // -----------------------------
@@ -8,8 +8,8 @@
 function toEnglishNumber(str) {
     if (!str) return "";
     return str
-        .replace(/[\u06F0-\u06F9]/g, d => String.fromCharCode(d.charCodeAt(0) - 1728))
-        .replace(/[\u0660-\u0669]/g, d => String.fromCharCode(d.charCodeAt(0) - 1584));
+        .replace(/[۰-۹]/g, d => String.fromCharCode(d.charCodeAt(0) - 1728))
+        .replace(/[٠-٩]/g, d => String.fromCharCode(d.charCodeAt(0) - 1584));
 }
 
 function parseNumber(value) {
@@ -24,9 +24,6 @@ function formatNumber(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-// -----------------------------
-// ۲. اعمال جداکننده سه‌تایی روی فیلد عددی با حفظ کرسر
-// -----------------------------
 function attachNumericField(field, callback) {
     field.addEventListener("input", function () {
         let cursorPos = field.selectionStart;
@@ -41,7 +38,7 @@ function attachNumericField(field, callback) {
 }
 
 // -----------------------------
-// ۳. محاسبات بارنامه
+// ۲. محاسبات بارنامه
 // -----------------------------
 function initShipmentCalculations() {
     function getField(name) {
@@ -63,13 +60,8 @@ function initShipmentCalculations() {
         const value = parseNumber(valueField.value);
         let insurance = 0;
         if (value > 0) {
-            if (value <= 2000000000) {
-                insurance = 2000000;  // سقف تا ۲ میلیارد → بیمه ثابت
-            } else {
-                insurance = Math.floor(value * 0.001);  // بالای ۲ میلیارد → ۱۰ درصد
-            }
+            insurance = value <= 2000000000 ? 2000000 : Math.floor(value * 0.001);
         }
-        // const insurance = Math.round(value * 0.001);
         insuranceField.value = formatNumber(insurance);
     }
 
@@ -91,7 +83,6 @@ function initShipmentCalculations() {
 
     attachNumericField(freightField);
 
-    // مقداردهی اولیه
     [valueField, insuranceField, loadingFeeField, totalFareField, freightField].forEach(f => {
         if (f.value) f.value = formatNumber(parseNumber(f.value));
     });
@@ -100,7 +91,7 @@ function initShipmentCalculations() {
 }
 
 // -----------------------------
-// ۴. selectable-card toggle
+// ۳. selectable-card toggle
 // -----------------------------
 function initSelectableCards() {
     document.querySelectorAll('.selectable-card').forEach(card => {
@@ -108,7 +99,7 @@ function initSelectableCards() {
         if (!checkbox) return;
         if (checkbox.checked) card.classList.add('selected');
         card.addEventListener('click', e => {
-            if (e.target.tagName === 'INPUT') return; // جلوگیری از toggle روی input داخلی
+            if (e.target.tagName === 'INPUT') return;
             checkbox.checked = !checkbox.checked;
             card.classList.toggle('selected', checkbox.checked);
         });
@@ -116,7 +107,7 @@ function initSelectableCards() {
 }
 
 // -----------------------------
-// ۵. توضیحات انتخابی + دستی (نسخه اصلاح‌شده - toggle قابل لغو)
+// ۴. توضیحات انتخابی + دستی
 // -----------------------------
 function initExplanations() {
     const select = document.getElementById("explanations");
@@ -138,12 +129,8 @@ function initExplanations() {
             .filter(l => l);
 
         let html = "<ul>";
-        selectedOptions.forEach(item => {
-            html += `<li>${item}</li>`;
-        });
-        customLines.forEach(item => {
-            html += `<li>${item}</li>`;
-        });
+        selectedOptions.forEach(item => { html += `<li>${item}</li>` });
+        customLines.forEach(item => { html += `<li>${item}</li>` });
         html += "</ul>";
 
         previewBox.innerHTML = html;
@@ -151,38 +138,20 @@ function initExplanations() {
         hiddenCustom.value = JSON.stringify(customLines);
     }
 
-    // برای هر گزینه: mousedown (اصلی) + fallback click/touchstart
     Array.from(select.options).forEach(opt => {
         const toggleHandler = function (e) {
-            // جلوگیری از رفتار پیش‌فرض مرورگر تا بتوانیم selection را خودمان مدیریت کنیم
             e.preventDefault();
-
             const willSelect = !this.selected;
-
-            if (willSelect) {
-                // اگر قرار است انتخاب شود => بقیه را پاک کن تا رفتار تک‌انتخابی حفظ شود
-                Array.from(select.options).forEach(o => o.selected = false);
-                this.selected = true;
-            } else {
-                // اگر قرار است لغو شود => خودش را false کن (بدون انتخاب هیچ‌کسی)
-                this.selected = false;
-            }
-
+            Array.from(select.options).forEach(o => o.selected = false);
+            this.selected = willSelect;
             updatePreview();
             return false;
         };
-
         opt.addEventListener('mousedown', toggleHandler);
-        opt.addEventListener('click', toggleHandler);            // fallback برای برخی مرورگرها
-        opt.addEventListener('touchstart', function (e) {         // موبایل: جلوگیری از native picker در برخی پیاده‌سازی‌ها
-            // توجه: touchstart باید passive:false باشد تا preventDefault کار کند؛
-            // اگر مرورگر اجازه نده، ممکن است native picker باز شود — در آن صورت باید از UI دلخواه استفاده کنید.
-            e.preventDefault();
-            toggleHandler.call(this, e);
-        }, {passive: false});
+        opt.addEventListener('click', toggleHandler);
+        opt.addEventListener('touchstart', function (e) { e.preventDefault(); toggleHandler.call(this, e); }, {passive:false});
     });
 
-    // پشتیبانی ساده از صفحه‌کلید: Space/Enter برای toggle روی گزینهٔ فعلی
     select.addEventListener('keydown', function (e) {
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
@@ -190,100 +159,137 @@ function initExplanations() {
             if (idx >= 0) {
                 const opt = select.options[idx];
                 const willSelect = !opt.selected;
-                if (willSelect) {
-                    Array.from(select.options).forEach(o => o.selected = false);
-                    opt.selected = true;
-                } else {
-                    opt.selected = false;
-                }
+                Array.from(select.options).forEach(o => o.selected = false);
+                opt.selected = willSelect;
                 updatePreview();
             }
         }
     });
 
-    if (customInput) {
-        customInput.addEventListener('input', updatePreview);
-    }
-
-    // مقداردهی اولیه
+    if (customInput) customInput.addEventListener('input', updatePreview);
     updatePreview();
 }
 
-
 // -----------------------------
-// ۶. جستجوی AJAX
+// ۵. AJAX search عمومی با delegation + debounce
 // -----------------------------
 function enableSearch(inputId, resultsId, hiddenId, searchUrl, extraOptions = {}) {
     const $input = $(`#${inputId}`);
     const $results = $(`#${resultsId}`);
     const $hidden = $(`#${hiddenId}`);
+    if (!$input.length || !$results.length || !$hidden.length) return;
 
-    $input.on('keyup', function () {
-        let query = $input.val().trim();
-        if (query.length === 0) {
+    let selectedIndex = -1;
+
+    function debounce(fn, wait) {
+        let t = null;
+        return function () {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, arguments), wait);
+        };
+    }
+
+    function doSearch(query) {
+        if (!query || !query.trim().length) {
             $results.empty().hide();
             return;
         }
-
         $.ajax({
             url: searchUrl,
             data: {q: query},
             success: function (data) {
                 let html = "";
-                if (data.results.length > 0) {
+                if (data && Array.isArray(data.results) && data.results.length > 0) {
                     data.results.forEach(item => {
-                        html += `<button type="button"
-                                        class="list-group-item list-group-item-action"
-                                        data-id="${item.id}"
-                                        data-name="${item.name}"
-                                        data-phone="${item.phone || ''}"
-                                        data-plate="${item.plate || ''}">
-                                        <strong>${item.name}</strong>
-                                        ${item.phone ? " - " + item.phone : ""}
-                                 </button>`;
+                        html += `<button type='button' class='list-group-item list-group-item-action' data-id='${item.id}' data-name='${item.name}' data-national='${item.national_id||''}' data-postal='${item.postal||''}' data-phone='${item.phone||''}' data-address='${item.address||''}'>${item.name} ${item.phone ? '-'+item.phone:''}</button>`;
                     });
                 } else {
-                    html = `<div class="list-group-item">نتیجه‌ای یافت نشد!!!</div>`;
+                    html = `<div class='list-group-item'>نتیجه‌ای یافت نشد</div>`;
                 }
                 $results.html(html).show();
-            }
+                selectedIndex = -1;
+            },
+            error: function () { $results.html(`<div class='list-group-item text-muted'>خطا در جستجو</div>`).show(); }
+        });
+    }
+
+    const debouncedSearch = debounce(function () {
+        doSearch($input.val());
+    }, 250);
+
+    $input.off('.enableSearch').on('input.enableSearch', debouncedSearch);
+
+    $input.off('keydown.enableSearch').on('keydown.enableSearch', function(e) {
+        const items = $results.find('.list-group-item');
+        if(e.keyCode === 38){ if(selectedIndex>0) selectedIndex--; highlightItem(); e.preventDefault(); return; }
+        if(e.keyCode === 40){ if(selectedIndex<items.length-1) selectedIndex++; highlightItem(); e.preventDefault(); return; }
+        if(e.keyCode === 13){ e.preventDefault(); items.eq(selectedIndex).click(); return; }
+
+        function highlightItem(){ items.removeClass('active'); if(selectedIndex>=0) items.eq(selectedIndex).addClass('active'); }
+    });
+
+    $results.off('click.enableSearch').on('click.enableSearch', '.list-group-item', function () {
+        const $item = $(this);
+        $input.val($item.data('name'));
+        $hidden.val($item.data('id'));
+        if(extraOptions.fillPlateField && $item.data('plate')!==undefined) {
+            $(`#${extraOptions.fillPlateField}`).val($item.data('plate'));
+        }
+        if(extraOptions.updateVehicleAjax) {
+            $.ajax({url:extraOptions.updateVehicleAjax,data:{driver_id:$item.data('id')},success:function(res){
+                if(res && res.success){
+                    $("#first-number").text(res.vehicle.two_digit);
+                    $("#letter").text(res.vehicle.alphabet);
+                    $("#second-number").text(res.vehicle.three_digit);
+                    $("#province").text(res.vehicle.series);
+                } else {
+                    $("#first-number").text("--"); $("#letter").text("-"); $("#second-number").text("---"); $("#province").text("**");
+                }
+            }, error:function(){ $("#first-number").text("--"); $("#letter").text("-"); $("#second-number").text("---"); $("#province").text("**"); }
+            });
+        }
+        $results.empty().hide();
+    });
+
+    $(document).off('click.enableSearchDismiss').on('click.enableSearchDismiss', function (e) {
+        if (!$(e.target).closest($results).length && !$(e.target).is($input)) {
+            $results.empty().hide();
+        }
+    });
+}
+
+// -----------------------------
+// ۶. فرم مشتری: submit + duplicate
+// -----------------------------
+function initCustomerForm() {
+    $("#customer-form").on('submit', function(e){
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'save_customer' %}",
+            type: "POST",
+            data: $(this).serialize(),
+            headers: {"X-CSRFToken": "{{ csrf_token }}"},
+            success: function(resp){
+                $("#msg").text(resp.success ? `با موفقیت ذخیره شد (ID: ${resp.id})` : `خطا: ${resp.error}`);
+            },
+            error: function(){ $("#msg").text("مشکلی در ارتباط با سرور پیش آمد"); }
         });
     });
 
-    $(document).on('click', `#${resultsId} .list-group-item`, function () {
-        const $item = $(this);
-        const id = $item.data('id');
-        const name = $item.data('name');
-        const plate = $item.data('plate');
-
-        $input.val(name);
-        $hidden.val(id);
-
-        if (extraOptions.fillPlateField && plate !== undefined) {
-            $(`#${extraOptions.fillPlateField}`).val(plate);
-        }
-
-        $results.empty().hide();
-
-        if (extraOptions.updateVehicleAjax) {
-            $.ajax({
-                url: extraOptions.updateVehicleAjax,
-                data: {driver_id: id},
-                success: function (res) {
-                    if (res.success) {
-                        $("#first-number").text(res.vehicle.two_digit);
-                        $("#letter").text(res.vehicle.alphabet);
-                        $("#second-number").text(res.vehicle.three_digit);
-                        $("#province").text(res.vehicle.series);
-                    } else {
-                        $("#first-number").text("--");
-                        $("#letter").text("-");
-                        $("#second-number").text("---");
-                        $("#province").text("**");
-                    }
-                }
-            });
-        }
+    $("#add-to-customer").on('click', function(){
+        let customerId = $("#customer-id").val();
+        if(!customerId){ $("#msg").text("ابتدا یک مشتری را انتخاب کنید."); return; }
+        $.ajax({
+            url: "{% url 'duplicate_customer' %}",
+            type: "POST",
+            data: $("#customer-form").serialize(),
+            headers: {"X-CSRFToken": "{{ csrf_token }}"},
+            success: function(resp){
+                $("#msg").text(resp.success ? `رکورد جدید برای مشتری ایجاد شد (ID: ${resp.new_id})` : `خطا: ${resp.error}`);
+                if(resp.success) $("#customer-id").val(resp.new_id);
+            },
+            error: function(){ $("#msg").text("مشکلی در ارتباط با سرور پیش آمد"); }
+        });
     });
 }
 
@@ -295,12 +301,11 @@ document.addEventListener("DOMContentLoaded", function () {
     initSelectableCards();
     initExplanations();
 
-    // فعال‌سازی search AJAX با URL هایی که از template ارسال شدن
     enableSearch("receiver-input", "receiver-results", "receiver-id", urls.searchCustomer);
     enableSearch("sender-input", "sender-results", "sender-id", urls.searchCustomer);
-    enableSearch("driver-input", "driver-results", "driver-id", urls.searchDriver, {
-        fillPlateField: "vehicle-plate",
-        updateVehicleAjax: urls.getVehicleByDriver
-    });
+    enableSearch("driver-input", "driver-results", "driver-id", urls.searchDriver, { fillPlateField: "vehicle-plate", updateVehicleAjax: urls.getVehicleByDriver });
     enableSearch("vehicle-input", "vehicle-results", "vehicle-id", urls.searchVehicle);
+    enableSearch("customer-input", "customer-results", "customer-id", "{% url 'search_customer' %}");
+
+    initCustomerForm();
 });

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -73,9 +74,9 @@
         <input type="text" id="customer-address" name="address" class="form-control">
     </div>
 
-    <button type="submit" class="btn btn-success">ذخیره</button>
+    <button type="submit" class="btn btn-success">ذخیره و ایجاد مشتری جدید</button>
     <button type="button" id="add-to-customer" class="btn btn-warning">
-        افزودن اطلاعات به همین مشتری
+        افزودن اطلاعات به مشتری فعلی
     </button>
 </form>
 
@@ -89,28 +90,28 @@
 
         // جستجو
         $("#customer-input").on("keyup", function (e) {
-            let query = $(this).val().trim();
+            let query = $(this).val();  // فاصله‌ها حفظ شوند
 
-            // اگر خالی شد → همه فیلدها رو پاک کن
+            // اگر فیلد کاملاً خالی شد → همه فیلدها پاک شوند
             if (query.length === 0) {
-                clearForm("");
+                clearForm();
                 $("#customer-results").empty().hide();
                 selectedIndex = -1;
                 return;
             }
 
-            // کنترل کلیدها
-            if (e.keyCode === 38) {
+            // کنترل کلیدهای بالا/پایین/Enter
+            if (e.keyCode === 38) {  // بالا
                 if (selectedIndex > 0) selectedIndex--;
                 highlightItem();
                 return;
             }
-            if (e.keyCode === 40) {
+            if (e.keyCode === 40) {  // پایین
                 if (selectedIndex < $("#customer-results .list-group-item").length - 1) selectedIndex++;
                 highlightItem();
                 return;
             }
-            if (e.keyCode === 13) {
+            if (e.keyCode === 13) {  // Enter
                 e.preventDefault();
                 let selected = $("#customer-results .list-group-item").eq(selectedIndex);
                 if (selected.length) {
@@ -119,6 +120,7 @@
                 return;
             }
 
+            // AJAX جستجو
             $.ajax({
                 url: "{% url 'search_customer' %}",
                 data: {q: query},
@@ -139,7 +141,7 @@
                                  </button>`;
                         });
                     } else {
-                        clearForm(query); // نتیجه‌ای نبود → فرم خالی شه و فقط نام بمونه
+                        // ❌ نتیجه پیدا نشد → فقط نمایش لیست نتایج، فیلدها پاک نمی‌شوند
                         html = `<div class="list-group-item">نتیجه‌ای یافت نشد</div>`;
                     }
                     $("#customer-results").html(html).show();
@@ -165,10 +167,10 @@
             $("#customer-results").empty().hide();
         }
 
-        // فرم خالی‌ساز
-        function clearForm(name = "") {
+        // فرم خالی‌ساز: تمام فیلدهای مشتری را پاک می‌کند
+        function clearForm() {
             $("#customer-id").val("");
-            $("#customer-input").val(name);
+            $("#customer-input").val("");
             $("#customer-national").val("");
             $("#customer-postal").val("");
             $("#customer-phone").val("");
@@ -201,7 +203,7 @@
             });
         });
 
-        // افزودن اطلاعات به همین مشتری (ایجاد رکورد جدید)
+        // افزودن رکورد جدید به مشتری
         $("#add-to-customer").click(function () {
             let customerId = $("#customer-id").val();
 
@@ -211,14 +213,14 @@
             }
 
             $.ajax({
-                url: "{% url 'duplicate_customer' %}",   // ویوی جدید در جنگو
+                url: "{% url 'duplicate_customer' %}",
                 type: "POST",
-                data: $("#customer-form").serialize(),   // تمام فیلدهای فرم
+                data: $("#customer-form").serialize(),
                 headers: {"X-CSRFToken": "{{ csrf_token }}"},
                 success: function (resp) {
                     if (resp.success) {
                         $("#msg").text("رکورد جدید برای مشتری ایجاد شد (ID: " + resp.new_id + ")");
-                        $("#customer-id").val(resp.new_id);  // می‌تونی انتخاب کنی روی رکورد جدید بمونه
+                        $("#customer-id").val(resp.new_id);
                     } else {
                         $("#msg").text("خطا: " + resp.error);
                     }
@@ -230,6 +232,7 @@
         });
     });
 </script>
+
 
 
 </body>

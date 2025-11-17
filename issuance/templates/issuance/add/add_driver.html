@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -120,7 +121,7 @@
 
         // جستجو
         $("#driver-input").on("keyup", function (e) {
-            let query = $(this).val().trim();
+            let query = $(this).val()
 
             // اگر خالی شد → همه فیلدها رو پاک کن
             if (query.length === 0) {

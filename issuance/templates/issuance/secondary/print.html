@@ -1,4 +1,6 @@
 {% load static %}
+{% load jalali_tags %}
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -83,7 +85,7 @@
         <div class="brand">بارنامه / بیجک</div>
         <div class="meta text-end">
           <div>کد رهگیری: <strong>{{ bijak.tracking_code|default:"—" }}</strong></div>
-          <div>تاریخ بارنامه: <strong>{{ bijak.date|default:"—" }}</strong></div>
+          <div>تاریخ بارنامه: <strong>{{ bijak.issuance_date }}</strong></div>
         </div>
       </div>
       <div class="divider"></div>
