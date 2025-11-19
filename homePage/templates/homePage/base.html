@@ -1,100 +1,408 @@
-{% load jalali_tags %}
-{% load static %}
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مؤسسه حمل و نقل صدرا بار</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <link rel="stylesheet" href="{% static 'homePage/css/newstyle.css' %}">
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>باربری آنلاین – نسخه فوق‌پیشرفته</title>
+  <meta name="description" content="سامانه هوشمند باربری با طراحی مدرن، نقشه زنده ایران، ویزارد سفارش، ردیابی پیشرفته و انیمیشن‌های حرفه‌ای." />
 
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- Swiper -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Persian Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{ --accent-1:#0ea5e9; --accent-2:#2563eb; }
+    body{ font-family:'Vazirmatn',sans-serif; margin:0; }
+
+    /* Hero */
+    .hero-bg{ background: linear-gradient(180deg,rgba(2,6,23,0.4),rgba(2,6,23,0.7)), url('https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=1600&q=80') center/cover; background-size:cover; }
+
+    .glass{ backdrop-filter:blur(16px); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.08); border-radius:16px; }
+
+    .gradient-text{ background:linear-gradient(90deg,var(--accent-1),var(--accent-2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+    #liveMap{ height:420px; width:100%; border-radius:16px; }
+
+    /* Wizard */
+    .wizard-step{ display:none; }
+    .wizard-step.active{ display:block; }
+
+    /* Timeline */
+    .timeline{ counter-reset:step; }
+    .timeline-item{ position:relative; padding:1rem 1rem 1rem 3rem; background:#fff; border-radius:10px; }
+    .timeline-item + .timeline-item{ margin-top:0.75rem; }
+    .timeline-item:before{ counter-increment:step; content:counter(step); width:34px;height:34px; background:var(--accent-2); color:#fff; border-radius:50%; position:absolute; right:-1.7rem; top:1rem; display:flex; align-items:center; justify-content:center; }
+
+    .card{ transition:0.35s; }
+    .card:hover{ transform:translateY(-8px); box-shadow:0 20px 40px rgba(0,0,0,0.12); }
+
+    /* responsive small fixes */
+    @media (max-width:768px){
+      .hero-bg { padding:4rem 0; }
+      #liveMap { height:300px; }
+    }
+  </style>
 </head>
-<body>
-<header>
-    <div class="base_container">
-        <h1>مؤسسه حمل و نقل صدرا بار</h1>
-        <nav>
-            <ul>
-                {% if user.is_authenticated %}
-                    <p>خوش آمدید {{ user.username }} ({{ user.get_role_display }})</p>
 
-                    <li><a href="{% url 'logout' %}">خروج</a></li>
-                    {% if user.role in 'admin' %}
-                        <li><a href="{% url 'admin_dashboard' %}">داشبورد ادمین</a></li>
-                        <li><a href="{% url 'create_new' %}">صدور بارنامه</a></li>
-                        <li><a href="{% url 'search_shipment' %}">جستجو بارنامه</a></li>
-                    {% elif user.role == 'manager' %}
-                        <li><a href="{% url 'manager_dashboard' %}">داشبورد مدیریت</a></li>
-                        <li><a href="{% url 'create_new' %}">صدور بارنامه</a></li>
-                        <li><a href="{% url 'search_shipment' %}">جستجو بارنامه</a></li>
-                    {% elif user.role == 'staff' %}
-                        <li><a href="{% url 'staff_dashboard' %}">داشبورد کارمند</a></li>
-                        <li><a href="{% url 'create_new' %}">صدور بارنامه</a></li>
-                        <li><a href="{% url 'search_shipment' %}">جستجو بارنامه</a></li>
-                    {% endif %}
-                {% else %}
-                    <li><a href="{% url 'home' %}">خانه</a></li>
-                    <li><a href="#">درباره ما</a></li>
-                    <li><a href="#">خدمات</a></li>
-                    <li><a href="{% url 'tariff' %}">تعرفه‌ها</a></li>
-                    <li><a href="#">تماس با ما</a></li>
-                    <li><a href="{% url 'login' %}">ورود</a></li>
-{#                    <li><a href="{% url 'super_admin_login' %}">ورود ادمین کل</a></li>#}
-                {% endif %}
-            </ul>
-        </nav>
+<body class="bg-gray-100 text-gray-800">
+
+<!-- TOP BAR -->
+<div class="bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-1 text-center text-sm">ارسال رایگان برای سفارش‌های بالای ۵۰۰ هزار تومان — پشتیبانی ۲۴/۷</div>
+
+<!-- HEADER -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur shadow">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="text-2xl font-extrabold text-blue-600">باربری آنلاین</div>
+      <span class="hidden sm:inline text-sm text-gray-600">ردیابی ۲۴/۷</span>
     </div>
+
+    <nav class="hidden md:flex gap-8 items-center text-lg">
+      <a href="#services" class="hover:text-blue-600">خدمات</a>
+      <a href="#fleet" class="hover:text-blue-600">ناوگان</a>
+      <a href="#pricing" class="hover:text-blue-600">تعرفه‌ها</a>
+      <a href="#tracking" class="hover:text-blue-600">ردیابی</a>
+      <a href="#contact" class="hover:text-blue-600">تماس</a>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <button id="themeToggle" aria-label="تغییر حالت" class="p-2 rounded-lg hover:bg-gray-100">🌙</button>
+      <a id="downloadHtml" class="hidden md:inline-block bg-white text-blue-700 px-3 py-2 rounded-md border">دانلود HTML</a>
+      <a href="#pricing" class="hidden md:inline-block bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-md">ثبت سفارش</a>
+      <button id="openMenu" class="md:hidden p-2 rounded-md bg-gray-100">☰</button>
+    </div>
+  </div>
 </header>
 
-{% block content %}
-{% endblock %}
-
-
-<footer>
-    <div class="footer stamp">
-        مدیریت: سیّد سعید حسینی<br>
-        ۰۹۳۰۹۸۴۳۷۰۴ ---- ۰۹۱۵۹۱۷۵۲۰۳ ---- ۰۵۱-۳۵۴۲۰۷۰۴ ---- ۰۵۱-۳۵۴۲۰۷۰۳
+<!-- MOBILE PANEL -->
+<div id="mobileMenu" class="fixed inset-0 z-40 hidden">
+  <div class="absolute inset-0 bg-black/40" onclick="toggleMobile(false)"></div>
+  <aside class="absolute right-0 top-0 h-full w-72 bg-white p-6 shadow-lg">
+    <div class="flex items-center justify-between mb-6">
+      <div class="font-bold text-lg">باربری آنلاین</div>
+      <button onclick="toggleMobile(false)" aria-label="بستن">✕</button>
     </div>
-    <p>© ۲۰۲۵ مؤسسه حمل و نقل صدرابار خراسان | تمامی حقوق محفوظ است.</p>
+    <nav class="flex flex-col gap-3">
+      <a href="#services" onclick="toggleMobile(false)" class="py-2">خدمات</a>
+      <a href="#fleet" onclick="toggleMobile(false)" class="py-2">ناوگان</a>
+      <a href="#pricing" onclick="toggleMobile(false)" class="py-2">تعرفه‌ها</a>
+      <a href="#tracking" onclick="toggleMobile(false)" class="py-2">ردیابی</a>
+      <a href="#contact" onclick="toggleMobile(false)" class="py-2">تماس</a>
+    </nav>
+    <div class="mt-6"><a href="#pricing" class="block text-center bg-blue-600 text-white py-2 rounded-md">ثبت سفارش</a></div>
+  </aside>
+</div>
+
+<!-- HERO -->
+<section class="hero-bg min-h-screen flex items-center justify-center text-center pt-16 pb-24">
+  <div class="max-w-4xl p-8 glass text-white">
+    <h1 class="text-5xl md:text-7xl font-extrabold gradient-text mb-4">باربری هوشمند ایران</h1>
+    <p class="text-lg md:text-xl mb-6 opacity-90">حمل‌ونقل سریع، امن و قابل ردیابی در سراسر کشور — با ناوگان مجهز و نقشه زنده.</p>
+    <div class="flex justify-center gap-4 flex-wrap">
+      <a href="#order" class="px-8 py-3 bg-blue-600 rounded-xl hover:bg-blue-700 transition">ثبت سفارش فوری</a>
+      <a href="#tracking" class="px-8 py-3 bg-white text-blue-600 rounded-xl hover:bg-blue-50 transition">ردیابی مرسوله</a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" class="py-20">
+  <div class="max-w-6xl mx-auto px-6 text-center">
+    <h2 class="text-4xl font-bold mb-10">خدمات ما</h2>
+
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
+      <div class="card p-6 bg-white rounded-xl shadow">
+        <h3 class="text-xl font-bold mb-2">حمل بین‌شهری</h3>
+        <p class="text-gray-600">ارسال بار به تمام استان‌های کشور با بیمه کامل.</p>
+      </div>
+      <div class="card p-6 bg-white rounded-xl shadow">
+        <h3 class="text-xl font-bold mb-2">ردیابی زنده</h3>
+        <p class="text-gray-600">مشاهده موقعیت کامیون‌ها روی نقشه ایران.</p>
+      </div>
+      <div class="card p-6 bg-white rounded-xl shadow">
+        <h3 class="text-xl font-bold mb-2">پرداخت در محل</h3>
+        <p class="text-gray-600">امکان تسویه در مقصد برای راحتی مشتری.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FLEET + MAP -->
+<section class="py-20 bg-blue-50" id="fleet">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+    <div>
+      <h2 class="text-3xl font-bold mb-4">نقشه زنده ناوگان</h2>
+      <p class="mb-4">برای اولین بار، مسیرهای ترانزیتی کلیدی ایران همراه با موقعیت ناوگان.</p>
+      <ul class="list-disc list-inside">
+        <li>مسیر شمال‌غرب → مرکز</li>
+        <li>مسیر شرق → تهران</li>
+        <li>مسیر جنوب → مرکز</li>
+      </ul>
+    </div>
+
+    <div>
+      <div id="liveMap" class="rounded-xl shadow-lg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- WIZARD ORDER FORM -->
+<section id="order" class="py-20">
+  <div class="max-w-3xl mx-auto px-6">
+    <h2 class="text-3xl font-bold mb-6 text-center">فرم ثبت سفارش مرحله‌ای</h2>
+
+    <div class="bg-white p-6 rounded-xl shadow">
+      <div id="step1" class="wizard-step active">
+        <label class="block text-sm font-medium">مبدا</label>
+        <input id="w_from" type="text" class="w-full border p-3 rounded mt-2" placeholder="مثال: تهران" />
+        <button onclick="nextStep()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded">بعدی</button>
+      </div>
+
+      <div id="step2" class="wizard-step">
+        <label class="block text-sm font-medium">مقصد</label>
+        <input id="w_to" type="text" class="w-full border p-3 rounded mt-2" placeholder="مثال: اصفهان" />
+        <div class="flex gap-3 mt-4">
+          <button onclick="prevStep()" class="px-4 py-2 border rounded">قبلی</button>
+          <button onclick="nextStep()" class="px-6 py-2 bg-blue-600 text-white rounded">بعدی</button>
+        </div>
+      </div>
+
+      <div id="step3" class="wizard-step">
+        <label class="block text-sm font-medium">نوع بار</label>
+        <input id="w_type" type="text" class="w-full border p-3 rounded mt-2" placeholder="مثال: لوازم" />
+        <div class="flex gap-3 mt-4">
+          <button onclick="prevStep()" class="px-4 py-2 border rounded">قبلی</button>
+          <button onclick="finishWizard()" class="px-6 py-2 bg-green-600 text-white rounded">ثبت نهایی</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRACKING -->
+<section id="tracking" class="py-20 bg-gray-50">
+  <div class="max-w-3xl mx-auto px-6">
+    <h2 class="text-3xl font-bold mb-8 text-center">ردیابی مرسوله</h2>
+
+    <div class="flex justify-center gap-3 mb-6">
+      <input id="trackCode" aria-label="کد پیگیری" class="p-3 rounded-md border w-64" placeholder="TRK123456" />
+      <button onclick="track()" class="px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-cyan-500 text-white">پیگیری</button>
+    </div>
+
+    <div id="trackResult" class="mb-6"></div>
+
+    <div id="timeline" class="timeline">
+      <!-- timeline items populated dynamically -->
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="py-16">
+  <div class="max-w-6xl mx-auto px-6">
+    <h3 class="text-3xl font-bold text-center mb-8">نظرات مشتریان</h3>
+    <div class="swiper mySwiper">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide p-6 bg-white rounded-xl shadow">"بسیار سریع و مطمئن" — حسین</div>
+        <div class="swiper-slide p-6 bg-white rounded-xl shadow">"بار به‌موقع رسید" — مریم</div>
+        <div class="swiper-slide p-6 bg-white rounded-xl shadow">"پشتیبانی عالی" — احمد</div>
+      </div>
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING (simple) -->
+<section id="pricing" class="py-16 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <h3 class="text-3xl font-bold text-center mb-8">تعرفه‌ها</h3>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="p-6 rounded-xl shadow card">
+        <div class="text-sm text-gray-500">وانت</div>
+        <div class="text-2xl font-bold mt-2">۱۲۰,۰۰۰ تومان</div>
+        <p class="text-sm text-gray-600 mt-2">درون‌شهری، تا ۵۰۰ کیلو</p>
+      </div>
+      <div class="p-6 rounded-xl shadow card">
+        <div class="text-sm text-gray-500">خاور</div>
+        <div class="text-2xl font-bold mt-2">۳۴۹,۰۰۰ تومان</div>
+        <p class="text-sm text-gray-600 mt-2">بین‌شهری، بیمه کامل</p>
+      </div>
+      <div class="p-6 rounded-xl shadow card">
+        <div class="text-sm text-gray-500">کامیون</div>
+        <div class="text-2xl font-bold mt-2">۵۹۹,۰۰۰ تومان</div>
+        <p class="text-sm text-gray-600 mt-2">حمل سنگین، پشتیبانی ۲۴/۷</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT & FOOTER -->
+<footer id="contact" class="bg-gray-900 text-white py-12">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-6">
+    <div>
+      <h4 class="font-bold mb-2">باربری آنلاین</h4>
+      <p class="text-gray-300">ارسال امن و سریع. بیمه و پشتیبانی ۲۴ ساعته.</p>
+    </div>
+    <div>
+      <h4 class="font-bold mb-2">فرم تماس</h4>
+      <form id="contactForm" class="space-y-2 text-sm">
+        <input name="name" placeholder="نام" class="w-full p-2 rounded-md text-black" />
+        <input name="email" placeholder="ایمیل" class="w-full p-2 rounded-md text-black" />
+        <textarea name="message" placeholder="پیام" class="w-full p-2 rounded-md text-black"></textarea>
+        <button type="button" onclick="submitContact()" class="px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-cyan-400 text-white">ارسال</button>
+      </form>
+    </div>
+    <div>
+      <h4 class="font-bold mb-2">ارتباط</h4>
+      <p class="text-gray-300">تلفن: 021-12345678</p>
+      <p class="text-gray-300">ایمیل: support@example.com</p>
+      <div class="mt-3 flex gap-3">
+        <a class="text-gray-300 hover:text-white">اینستاگرام</a>
+        <a class="text-gray-300 hover:text-white">تلگرام</a>
+        <a class="text-gray-300 hover:text-white">واتساپ</a>
+      </div>
+    </div>
+  </div>
+  <div class="text-center text-gray-500 mt-6">© 2025 BarBari. همه حقوق محفوظ است.</div>
 </footer>
 
+<!-- ORDER MODAL -->
+<div id="orderModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+  <div class="modal-backdrop absolute inset-0"></div>
+  <div class="relative bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
+    <button onclick="closeOrderModal()" class="absolute left-4 top-4">✕</button>
+    <h4 class="text-xl font-bold mb-3">درخواست ناوگان</h4>
+    <p class="text-sm text-gray-600 mb-4">فرم زیر را پر کنید تا تیم ما با شما تماس بگیرد.</p>
+    <form id="orderForm" class="space-y-3 text-sm">
+      <input name="o_from" placeholder="مبدا" class="w-full p-3 rounded-md border" />
+      <input name="o_to" placeholder="مقصد" class="w-full p-3 rounded-md border" />
+      <input name="o_phone" placeholder="شماره تماس" class="w-full p-3 rounded-md border" />
+      <div class="flex justify-end gap-3">
+        <button type="button" onclick="closeOrderModal()" class="px-3 py-2 rounded-md">انصراف</button>
+        <button type="button" onclick="submitOrder()" class="px-3 py-2 rounded-md bg-blue-600 text-white">ارسال درخواست</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-{#<script>#}
-{#    document.addEventListener("DOMContentLoaded", function () {#}
-{#        $('.persian-date-picker').persianDatepicker({#}
-{#            format: 'YYYY/MM/DD',#}
-{#            autoClose: true,#}
-{#            initialValue: false#}
-{#        });#}
-{#    });#}
-{#</script>#}
-
-</body>
-
-<script src="{% static 'issuance/script.js' %}"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-
-<link rel="stylesheet" href="{% static 'admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css' %}">
-<script src="{% static 'admin/js/django_jalali.min.js' %}"></script>
-
+<!-- SCRIPTS -->
 <script>
-    $(document).ready(function () {
-        if ($('.persian-date-picker').length && typeof persianDate !== 'undefined') {
-            $('.persian-date-picker').persianDatepicker({
-                format: 'YYYY/MM/DD',
-                autoClose: true,
-                initialValue: false
-            });
-        } else {
-            console.warn('persianDate یا المنت تقویم پیدا نشد');
-        }
+  // Mobile toggle
+  function toggleMobile(show){ document.getElementById('mobileMenu').style.display = show ? 'block' : 'none'; }
+  const openMenuEl = document.getElementById('openMenu');
+  if(openMenuEl) openMenuEl.addEventListener('click', ()=> toggleMobile(true));
+
+  // Dark mode toggle (persist)
+  const themeToggle = document.getElementById('themeToggle');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(themeToggle){ if(localStorage.theme === 'dark' || (!localStorage.theme && prefersDark)){ document.documentElement.classList.add('dark'); themeToggle.textContent='☀️' }}
+  if(themeToggle) themeToggle.addEventListener('click', ()=>{
+    document.documentElement.classList.toggle('dark');
+    localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    themeToggle.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+  });
+
+  // Swiper init
+  try{
+    if(window.Swiper){
+      const swiper = new Swiper('.mySwiper', { loop:true, pagination:{ el:'.swiper-pagination', clickable:true }, autoplay:{ delay:4000 }});
+    }
+  }catch(e){ console.warn('Swiper init failed', e); }
+
+  // GSAP
+  try{ if(window.gsap){ gsap.from('.gradient-text',{ y:20, opacity:0, duration:0.8, ease:'power3.out' }); gsap.from('.card',{ y:20, opacity:0, duration:0.8, stagger:0.08, ease:'power3.out' }); }}catch(e){ console.warn('GSAP failed', e); }
+
+  // Wizard functions
+  let step = 1;
+  function nextStep(){ if(step<3){ document.getElementById(`step${step}`).classList.remove('active'); step++; document.getElementById(`step${step}`).classList.add('active'); } }
+  function prevStep(){ if(step>1){ document.getElementById(`step${step}`).classList.remove('active'); step--; document.getElementById(`step${step}`).classList.add('active'); } }
+  function finishWizard(){ const from = document.getElementById('w_from').value || ''; const to = document.getElementById('w_to').value || ''; const type = document.getElementById('w_type').value || ''; alert(`سفارش ثبت شد:\\nمبدا: ${from}\\nمقصد: ${to}\\nنوع بار: ${type}`); document.getElementById('w_from').value=''; document.getElementById('w_to').value=''; document.getElementById('w_type').value=''; step=1; document.getElementById('step3').classList.remove('active'); document.getElementById('step2').classList.remove('active'); document.getElementById('step1').classList.add('active'); }
+
+  // Tracking
+  function track(){ const code = document.getElementById('trackCode').value.trim(); const out = document.getElementById('trackResult'); const tl = document.getElementById('timeline'); if(tl) tl.innerHTML=''; if(!code){ if(out) out.textContent='لطفاً کد پیگیری را وارد کنید.'; return; } const states=['ثبت شده','تحویل راننده','در مسیر','مرکز توزیع','تحویل شد']; const idx = Math.abs(code.split('').reduce((a,c)=>a + c.charCodeAt(0),0)) % states.length; if(out) out.innerHTML = `<div class="p-4 bg-white rounded-md text-right">کد: <strong>${code}</strong><br>وضعیت: <strong>${states[idx]}</strong></div>`; for(let i=idx;i>=0;i--){ const div=document.createElement('div'); div.className='timeline-item'; div.innerHTML = `<div class="text-sm font-bold">${states[i]}</div><div class="text-xs text-gray-600">${new Date(Date.now() - (idx-i)*3600*1000).toLocaleString()}</div>`; if(tl) tl.appendChild(div); } }
+
+  // Order modal
+  function openOrderModal(){ const modal = document.getElementById('orderModal'); if(modal){ modal.style.display='flex'; modal.classList.remove('hidden'); } }
+  function closeOrderModal(){ const modal = document.getElementById('orderModal'); if(modal){ modal.style.display='none'; modal.classList.add('hidden'); } }
+  function submitOrder(){ alert('درخواست شما ثبت شد. اپراتور با شما تماس خواهد گرفت.'); closeOrderModal(); const form = document.getElementById('orderForm'); if(form) form.reset(); }
+
+  // Contact
+  function submitContact(){ alert('پیام شما ارسال شد — تیم ما به زودی پاسخ خواهد داد.'); const cf = document.getElementById('contactForm'); if(cf) cf.reset(); }
+
+  // Map init + Iran transit routes + markers
+  try{
+    if(window.L){
+      const mapEl = document.getElementById('liveMap');
+      if(mapEl){
+        const map = L.map('liveMap', { scrollWheelZoom:false }).setView([32.4279, 53.6880], 5.6);
+
+        // tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+
+        // transit routes (approximate)
+        const transitRoutes = [
+          { name: 'تهران → قم → اصفهان → شیراز', coords: [[35.6892,51.3890],[34.6401,50.8764],[32.6539,51.6660],[29.5918,52.5837]] },
+          { name: 'تبریز → زنجان → قزوین → تهران', coords: [[38.0962,46.2738],[36.6736,48.4787],[36.2688,50.0041],[35.6892,51.3890]] },
+          { name: 'مشهد → سبزوار → سمنان → تهران', coords: [[36.2605,59.6168],[36.2126,57.6762],[35.5750,53.3949],[35.6892,51.3890]] }
+        ];
+
+        transitRoutes.forEach(route=>{
+          L.polyline(route.coords, { color:'#3b82f6', weight:4, opacity:0.9 }).addTo(map).bindPopup(route.name);
+        });
+
+        // sample fleet markers
+        const vehicles = [
+          { name:'ناوگان تهران', coords:[35.6892,51.3890] },
+          { name:'ناوگان اصفهان', coords:[32.6546,51.6680] },
+          { name:'ناوگان مشهد', coords:[36.2605,59.6168] }
+        ];
+
+        vehicles.forEach(v=>{
+          L.circleMarker(v.coords, { radius:7, fillColor:'#06b6d4', color:'#fff', weight:1, fillOpacity:1 }).addTo(map).bindPopup(`<strong>${v.name}</strong>`);
+        });
+
+        // fit map to show Iran nicely
+        const allCoords = transitRoutes.flatMap(r => r.coords);
+        const latlngs = allCoords.map(c => [c[0], c[1]]);
+        try{ map.fitBounds(latlngs, { padding:[50,50] }); }catch(e){ /* ignore */ }
+      }
+    }
+  }catch(e){ console.warn('Leaflet map failed', e); }
+
+  // Download HTML snapshot (single-file)
+  const downloadBtn = document.getElementById('downloadHtml');
+  if(downloadBtn){
+    downloadBtn.addEventListener('click', ()=>{
+      try{
+        const docHtml = '<!doctype html>\\n' + document.documentElement.outerHTML;
+        const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='barbari-landing.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      }catch(err){ console.error('Download failed', err); alert('دانلود انجام نشد — لطفاً مجدداً تلاش کنید.'); }
     });
+  }
+
+  // keyboard accessibility
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOrderModal(); toggleMobile(false); } });
+
+  // expose some functions globally (for inline onclick)
+  window.nextStep = nextStep; window.prevStep = prevStep; window.finishWizard = finishWizard; window.track = track;
+  window.openOrderModal = openOrderModal; window.closeOrderModal = closeOrderModal; window.submitOrder = submitOrder;
+  window.submitContact = submitContact; window.toggleMobile = toggleMobile;
 </script>
 
+</body>
 </html>
