@@ -8,6 +8,7 @@ class User(AbstractUser):
         ('admin', 'مدیر کل سیستم'),
         ('manager', 'مدیریت'),
         ('staff', 'کارمند'),
+        ('driver', 'راننده'),
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='staff')
 
@@ -32,7 +33,8 @@ class RolePermission(models.Model):
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, unique=True)
     can_access_dashboard = models.BooleanField(default=False, verbose_name="دسترسی به داشبورد اصلی")
-    can_manage_shipments = models.BooleanField(default=False, verbose_name="دسترسی به بخش بارنامه‌ها")
+    can_manage_shipments = models.BooleanField(default=False, verbose_name="دسترسی به مدیریت بارنامه‌ها")
+    can_issuance_shipments = models.BooleanField(default=False, verbose_name="دسترسی به صدور بارنامه‌ها")
     can_view_reports = models.BooleanField(default=False, verbose_name="دسترسی به گزارش‌ها")
     can_manage_users = models.BooleanField(default=False, verbose_name="دسترسی به مدیریت کاربران")
     can_manage_customers = models.BooleanField(default=False, verbose_name="دسترسی به لیست مشتریان")

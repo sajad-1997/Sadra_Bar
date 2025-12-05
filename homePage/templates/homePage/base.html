@@ -66,7 +66,7 @@
 <header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur shadow">
   <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <div class="text-2xl font-extrabold text-blue-600">باربری آنلاین</div>
+      <div class="text-2xl font-extrabold text-blue-600">صدرابار خراسان</div>
       <span class="hidden sm:inline text-sm text-gray-600">ردیابی ۲۴/۷</span>
     </div>
 
@@ -80,7 +80,7 @@
 
     <div class="flex items-center gap-3">
       <button id="themeToggle" aria-label="تغییر حالت" class="p-2 rounded-lg hover:bg-gray-100">🌙</button>
-      <a id="downloadHtml" class="hidden md:inline-block bg-white text-blue-700 px-3 py-2 rounded-md border">دانلود HTML</a>
+      <a href="{% url 'login' %}" class="hidden md:inline-block bg-white text-blue-700 px-3 py-2 rounded-md border">ورود</a>
       <a href="#pricing" class="hidden md:inline-block bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-md">ثبت سفارش</a>
       <button id="openMenu" class="md:hidden p-2 rounded-md bg-gray-100">☰</button>
     </div>
@@ -92,10 +92,11 @@
   <div class="absolute inset-0 bg-black/40" onclick="toggleMobile(false)"></div>
   <aside class="absolute right-0 top-0 h-full w-72 bg-white p-6 shadow-lg">
     <div class="flex items-center justify-between mb-6">
-      <div class="font-bold text-lg">باربری آنلاین</div>
+      <div class="font-bold text-lg">صدرابار خراسان</div>
       <button onclick="toggleMobile(false)" aria-label="بستن">✕</button>
     </div>
     <nav class="flex flex-col gap-3">
+      <a href="{% url 'login' %}" onclick="toggleMobile(false)" class="py-2">ورود</a>
       <a href="#services" onclick="toggleMobile(false)" class="py-2">خدمات</a>
       <a href="#fleet" onclick="toggleMobile(false)" class="py-2">ناوگان</a>
       <a href="#pricing" onclick="toggleMobile(false)" class="py-2">تعرفه‌ها</a>
@@ -253,7 +254,7 @@
 <footer id="contact" class="bg-gray-900 text-white py-12">
   <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-6">
     <div>
-      <h4 class="font-bold mb-2">باربری آنلاین</h4>
+      <h4 class="font-bold mb-2">مؤسسه حمل و نقل صدرابار خراسان</h4>
       <p class="text-gray-300">ارسال امن و سریع. بیمه و پشتیبانی ۲۴ ساعته.</p>
     </div>
     <div>
@@ -267,16 +268,23 @@
     </div>
     <div>
       <h4 class="font-bold mb-2">ارتباط</h4>
-      <p class="text-gray-300">تلفن: 021-12345678</p>
+      <p class="text-gray-300">تلفن: ۳۵۴۲۰۷۰۳-۰۵۱</p>
+      <p class="text-gray-300">تلفن: ۳۵۴۲۰۷۰۴-۰۵۱</p>
+      <p class="text-gray-300">ثبت سفارش: ۰۹۳۰۹۸۴۳۷۰۴</p>
+      <p class="text-gray-300">فضای مجازی: ۰۹۱۵۹۱۷۵۲۰۳</p>
       <p class="text-gray-300">ایمیل: support@example.com</p>
       <div class="mt-3 flex gap-3">
         <a class="text-gray-300 hover:text-white">اینستاگرام</a>
         <a class="text-gray-300 hover:text-white">تلگرام</a>
         <a class="text-gray-300 hover:text-white">واتساپ</a>
+        <a class="text-gray-300 hover:text-white">ایتا</a>
+        <a class="text-gray-300 hover:text-white">روبیکا</a>
+        <a class="text-gray-300 hover:text-white">سروش</a>
+        <a class="text-gray-300 hover:text-white">بله</a>
       </div>
     </div>
   </div>
-  <div class="text-center text-gray-500 mt-6">© 2025 BarBari. همه حقوق محفوظ است.</div>
+  <div class="text-center text-gray-500 mt-6">© ۲۰۲۵ مؤسسه حمل و نقل صدرابار خراسان | تمامی حقوق محفوظ است.</div>
 </footer>
 
 <!-- ORDER MODAL -->

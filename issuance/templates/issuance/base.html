@@ -1,12 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>فرم بارنامه کامل</title>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap" rel="stylesheet">
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
-{#    <link rel="stylesheet" href="/static/css/style.css">#}
+    {#    <link rel="stylesheet" href="{% static 'issuance/css/style.css' %}">#}
+        <link rel="stylesheet" href="{% static 'issuance/css/form_new.css' %}">
+        <link rel="stylesheet" href="{% static 'issuance/css/new_style_old.css' %}">
 </head>
 <body>
 
@@ -18,7 +22,7 @@
     <div>
         <ul>
             <li><a href="{% url 'home' %}">صفحه اصلی</a></li>
-{#            <li><a href="{% url 'barnameh' %}">صدور بار نامه</a></li>#}
+            <li><a href="{% url 'go_dashboard' %}">پنل کاربری</a></li>
         </ul>
     </div>
 </div>

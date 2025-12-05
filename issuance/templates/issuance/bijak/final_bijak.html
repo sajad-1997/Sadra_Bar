@@ -147,7 +147,7 @@
                 </tr>
                 <tr>
                     <td class="table-cell">{{ bijak.driver.phone|persian_numbers }}</td>
-                    <td class="table-cell">{{ bijak.driver.phone2|persian_numbers }}</td>
+                    <td class="table-cell">{{ bijak.driver.phone2|persian_numbers|default:"-" }}</td>
                     <td class="table-cell">{{ bijak.driver.residence }}</td>
                     <td class="table-cell">{{ bijak.driver.address|persian_numbers }}</td>
                 </tr>
@@ -197,9 +197,9 @@
                 <tbody>
                 <tr class="green-boxes">
                     <td class="table-cell-cargo">{{ bijak.cargo.name }}</td>
-                    <td class="table-cell-cargo">{{ bijak.cargo.weight|persian_numbers }}</td>
-                    <td class="table-cell-cargo">{{ bijak.cargo.package_type }}</td>
-                    <td class="table-cell-cargo">{{ bijak.cargo.number_of_packaging|persian_numbers }}</td>
+                    <td class="table-cell-cargo">{{ bijak.cargo.weight|persian_numbers|default:"-" }}</td>
+                    <td class="table-cell-cargo">{{ bijak.cargo.package_type|default:"-" }}</td>
+                    <td class="table-cell-cargo">{{ bijak.cargo.number_of_packaging|persian_numbers|default:"-" }}</td>
                     <td class="table-cell-cargo">{{ bijak.cargo.origin }}</td>
                     <td class="table-cell-cargo">{{ bijak.cargo.destination }}</td>
 
@@ -256,19 +256,19 @@
 
 
     <!-- Signature Section -->
-    {#    <div class="signature-section section">#}
-    {#        <div class="signature-box">#}
-    {#            <p>امضاء راننده</p>#}
-    {#        </div>#}
-    {#        <div class="signature-box">#}
-    {#            <p>امضاء تحویل گیرنده</p>#}
-    {#        </div>#}
-    {#        <div class="signature-box">#}
-    {#            <p>مهر و امضاء</p>#}
-    {#            <p>شرکت حمل و نقل صدرابار خراسان</p>#}
-    {#            <p style="font-size: 10px;">مدیریت: سید سعید حسینی</p>#}
-    {#        </div>#}
-    {#    </div>#}
+    <div class="signature-section section">
+        <div class="signature-box">
+            <p>امضاء راننده</p>
+        </div>
+        <div class="signature-box">
+            <p>امضاء تحویل گیرنده</p>
+        </div>
+        <div class="signature-box">
+            <p>مهر و امضاء</p>
+            <p>شرکت حمل و نقل صدرابار خراسان</p>
+            <p style="font-size: 10px;">مدیریت: سید سعید حسینی</p>
+        </div>
+    </div>
 </div>
 
 <script>

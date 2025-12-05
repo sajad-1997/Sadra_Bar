@@ -39,6 +39,7 @@ class CustomerForm(PersianNumberFormMixin, forms.ModelForm):
     class Meta:
         model = Customer
         fields = '__all__'
+        exclude = ['created_by', 'created_by_role', 'updated_by', 'updated_by_role']
 
 
 class DriverForm(PersianNumberFormMixin, forms.ModelForm):
@@ -47,6 +48,7 @@ class DriverForm(PersianNumberFormMixin, forms.ModelForm):
     class Meta:
         model = Driver
         fields = '__all__'
+        exclude = ['created_by', 'created_by_role', 'updated_by', 'updated_by_role']
 
     def clean_birth_date(self):
         data = self.cleaned_data['birth_date']
@@ -67,6 +69,7 @@ class VehicleForm(PersianNumberFormMixin, forms.ModelForm):
     class Meta:
         model = Vehicle
         fields = '__all__'
+        exclude = ['created_by', 'created_by_role', 'updated_by', 'updated_by_role']
 
 
 class CargoForm(PersianNumberFormMixin, forms.ModelForm):
@@ -75,6 +78,7 @@ class CargoForm(PersianNumberFormMixin, forms.ModelForm):
     class Meta:
         model = Cargo
         fields = '__all__'
+        exclude = ['created_by', 'created_by_role', 'updated_by', 'updated_by_role']
 
 
 class CaptionForm(forms.ModelForm):
@@ -112,8 +116,9 @@ class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
 
     class Meta:
         model = Bijak
-        exclude = ('tracking_code', 'issuance_date')
         fields = ('value', 'total_fare', 'insurance', 'loading_fee', 'freight',)  # فیلدهای مدلی
+        exclude = ('tracking_code', 'issuance_date')
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
