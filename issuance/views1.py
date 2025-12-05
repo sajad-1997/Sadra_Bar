@@ -7,9 +7,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
@@ -21,6 +20,15 @@ from .models import Customer, Driver, Vehicle, Caption, Bijak
 # from .utils import num_to_word_rial
 
 
+def to_jalali(date_obj):
+    if not date_obj:
+        return "—"
+    try:
+        return jdatetime.date.fromgregorian(date=date_obj).strftime("%Y/%m/%d")
+    except:
+        return "—"
+
+
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'issuance/base.html'
 
@@ -29,7 +37,7 @@ class StaffOnlyView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'issuance/bijak/issuance_form.html'
 
     def test_func(self):
-        return self.request.user.role in ['admin', 'staff']
+        return self.request.user.role in ['admin', 'manager', 'staff']
 
 
 @login_required(login_url='/accounts/login/')
@@ -89,9 +97,6 @@ def create_new(request):
                     Caption.objects.create(content=manual_text)
                     bijak.custom_caption = manual_text
 
-                # 🔹 افزودن کاربر ایجادکننده
-                bijak.created_by = request.user
-
                 # ذخیره بیجک
                 bijak.save()
 
@@ -120,44 +125,197 @@ def create_new(request):
     })
 
 
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
+# -----------------------
+# افزودن مشتری، راننده، وسیله و توضیح
+# -----------------------
+def add_customer(request):
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+        if form.is_valid():
+            customer = form.save(commit=False)  # رکورد هنوز ذخیره نشده
+            customer.save()
+            return redirect('create_new')  # بازگشت به فرم بارنامه
+    else:
+        form = CustomerForm()
+    return render(request, 'issuance/add/add_customer.html', {"form": form})
+
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
+def add_driver(request):
+    if request.method == 'POST':
+        form = DriverForm(request.POST)
+        if form.is_valid():
+            driver = form.save(commit=False)  # رکورد هنوز ذخیره نشده
+            driver.save()
+        return redirect('create_new')  # بازگشت به فرم بارنامه
+    else:
+        form = DriverForm()
+    return render(request, 'issuance/add/add_driver.html', {"form": form})
+
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
+def add_vehicle(request):
+    if request.method == "POST":
+        form = VehicleForm(request.POST)
+        if form.is_valid():
+            vehicle = form.save(commit=False)  # رکورد هنوز ذخیره نشده
+            vehicle.save()
+            return redirect('create_new')  # بازگشت به فرم بارنامه
+    else:
+        form = VehicleForm()
+    return render(request, "issuance/add/add_vehicle.html", {"form": form})
+
+
+def get_vehicle_by_driver(request):
+    driver_id = request.GET.get("driver_id")
+    try:
+        vehicle = Vehicle.objects.get(driver_id=driver_id)
+        data = {
+            "two_digit": vehicle.license_plate_two_digit,
+            "alphabet": vehicle.license_plate_alphabet,
+            "three_digit": vehicle.license_plate_three_digit,
+            "series": vehicle.license_plate_series,
+        }
+        return JsonResponse({"success": True, "vehicle": data})
+    except Vehicle.DoesNotExist:
+        return JsonResponse({"success": False, "error": "وسیله‌ای برای این راننده پیدا نشد"})
+
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
+def add_caption(request):
+    if request.method == "POST":
+        form = CaptionForm(request.POST)
+        if form.is_valid():
+            caption = form.save(commit=False)  # رکورد هنوز ذخیره نشده
+            caption.save()
+            messages.success(request, "✅ توضیحات با موفقیت ذخیره شد.")
+            return redirect("create_new")
+    else:
+        form = CaptionForm()
+
+    return render(request, 'issuance/add/add_caption.html', {"form": form})
+
+
 def to_words_view(request):
     num = request.GET.get("num", "0")
     words = num_to_word_rial(num)
     return JsonResponse({"words": words})
+
 
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
 # -----------------------
 # جستجوی بیجک
 # -----------------------
+# def search_shipment(request):
+#     query = request.GET.get('q', '').strip()
+#     shipments = Bijak.objects.all()
+#
+#     if query:
+#         shipments = shipments.filter(
+#             Q(sender__name__icontains=query) |
+#             Q(receiver__name__icontains=query) |
+#             Q(driver__name__icontains=query) |
+#             Q(vehicle__license_plate_two_digit__icontains=query) |
+#             Q(vehicle__license_plate_three_digit__icontains=query) |
+#             Q(vehicle__license_plate_alphabet__icontains=query) |
+#             Q(vehicle__license_plate_series__icontains=query) |
+#             Q(cargo__name__icontains=query) |
+#             Q(cargo__origin__icontains=query) |
+#             Q(cargo__destination__icontains=query) |
+#             Q(selected_caption__content__icontains=query)  # تغییر به selected_caption
+#         )
+#
+#     return render(request, 'issuance/secondary/search.html', {
+#         'shipments': shipments,
+#         'query': query
+#     })
 def search_shipment(request):
-    query = request.GET.get('q', '').strip()
-    shipments = Bijak.objects.all()
+    template_name = "issuance/search/search.html"
 
-    if query:
-        shipments = shipments.filter(
-            Q(sender__name__icontains=query) |
-            Q(receiver__name__icontains=query) |
-            Q(driver__name__icontains=query) |
-            Q(vehicle__license_plate_two_digit__icontains=query) |
-            Q(vehicle__license_plate_three_digit__icontains=query) |
-            Q(vehicle__license_plate_alphabet__icontains=query) |
-            Q(vehicle__license_plate_series__icontains=query) |
-            Q(cargo__name__icontains=query) |
-            Q(cargo__origin__icontains=query) |
-            Q(cargo__destination__icontains=query) |
-            Q(selected_caption__content__icontains=query)  # تغییر به selected_caption
-        )
+    query = Bijak.objects.all().order_by('-created_at')
 
-    return render(request, 'issuance/bijak/bijak_search.html', {
-        'shipments': shipments,
-        'query': query
-    })
+    # فیلدهای جستجو
+    tracking = request.GET.get('tracking')
+    sender = request.GET.get('sender')
+    receiver = request.GET.get('receiver')
+    origin = request.GET.get('origin')
+    destination = request.GET.get('destination')
+    driver = request.GET.get('driver')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    # بخش‌های پلاک جداگانه
+    plate_two_digit = request.GET.get('plate_two_digit')
+    plate_alphabet = request.GET.get('plate_alphabet')
+    plate_three_digit = request.GET.get('plate_three_digit')
+    plate_series = request.GET.get('plate_series')
+
+    # فیلترهای ساده
+    if tracking:
+        query = query.filter(tracking_code__icontains=tracking)
+
+    if sender:
+        query = query.filter(sender__name__icontains=sender)
+
+    if receiver:
+        query = query.filter(receiver__name__icontains=receiver)
+
+    if origin:
+        query = query.filter(origin__icontains=origin)
+
+    if destination:
+        query = query.filter(destination__icontains=destination)
+
+    if driver:
+        query = query.filter(driver__name__icontains=driver)
+
+    if start_date:
+        query = query.filter(created_at__date__gte=start_date)
+
+    if end_date:
+        query = query.filter(created_at__date__lte=end_date)
+
+    # فیلتر بر اساس پلاک بخش‌بخش
+    if plate_two_digit:
+        query = query.filter(vehicle__license_plate_two_digit__icontains=plate_two_digit)
+    if plate_alphabet:
+        query = query.filter(vehicle__license_plate_alphabet__icontains=plate_alphabet)
+    if plate_three_digit:
+        query = query.filter(vehicle__license_plate_three_digit__icontains=plate_three_digit)
+    if plate_series:
+        query = query.filter(vehicle__license_plate_series__icontains=plate_series)
+
+    context = {
+        "bijaks": query,
+        # نگهداری مقادیر فیلترها برای نمایش در فرم
+        "filters": {
+            "tracking": tracking or "",
+            "sender": sender or "",
+            "receiver": receiver or "",
+            "origin": origin or "",
+            "destination": destination or "",
+            "driver": driver or "",
+            "start_date": start_date or "",
+            "end_date": end_date or "",
+            "plate_two_digit": plate_two_digit or "",
+            "plate_alphabet": plate_alphabet or "",
+            "plate_three_digit": plate_three_digit or "",
+            "plate_series": plate_series or "",
+        }
+    }
+
+    return render(request, template_name, context)
 
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
 # -----------------------
-# سایر جستجوها (مشتری، راننده، وسیله)
+# جستجوها مشتری ها
 # -----------------------
 def search_customer(request):
     query = request.GET.get("q", "").strip()
@@ -183,8 +341,12 @@ def search_customer(request):
 
     return JsonResponse({"results": results})
 
+
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
+# -----------------------
+# جستجوها راننده ها
+# -----------------------
 def search_driver(request):
     query = request.GET.get("q", "").strip()
 
@@ -261,6 +423,7 @@ def save_customer(request):
 
     return JsonResponse({"success": False, "error": "Invalid request"})
 
+
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
 def duplicate_customer(request):
@@ -280,6 +443,7 @@ def duplicate_customer(request):
             return JsonResponse({"success": False, "error": str(e)})
 
     return JsonResponse({"success": False, "error": "درخواست نامعتبر"})
+
 
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
@@ -350,6 +514,9 @@ def save_driver(request):
 #
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
+# -----------------------
+# جستجوها خودرو ها
+# -----------------------
 def search_vehicle(request):
     q = request.GET.get("q", "")
     results = Vehicle.objects.filter(plate__icontains=q)[:10]
@@ -383,6 +550,7 @@ def print_page(request, pk):
     print("issuance_date:", shipment.issuance_date, type(shipment.issuance_date))
     return render(request, 'issuance/secondary/print.html', context)
 
+
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
 def preview_page(request, pk):
@@ -390,6 +558,7 @@ def preview_page(request, pk):
         'sender', 'receiver', 'driver', 'vehicle', 'cargo', 'selected_caption'
     ).get(pk=pk)
     return render(request, 'issuance/secondary/preview.html', {'bijak': bijak})
+
 
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
@@ -405,8 +574,8 @@ def bijak_last_view(request, pk):
 
     # تبدیل تمام تاریخ‌ها به رشته شمسی
     issuance_date = bijak.issuance_date.strftime("%Y/%m/%d")
-    birth_date = driver.birth_date.strftime("%Y/%m/%d")
-    license_issue_date = driver.certificate_date.strftime("%Y/%m/%d")
+    birth_date = to_jalali(driver.birth_date)
+    license_issue_date = to_jalali(driver.certificate_date)
 
     context = {
         'bijak': bijak,
@@ -417,142 +586,30 @@ def bijak_last_view(request, pk):
 
     return render(request, "issuance/bijak/final_bijak.html", context)
 
-@login_required(login_url='/accounts/login/')
-@never_cache  # جلوگیری از نمایش از کش
-# -----------------------
-# افزودن مشتری، راننده، وسیله و توضیح
-# -----------------------
-def add_customer(request):
-    if request.method == 'POST':
-        form = CustomerForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('create_new')  # بازگشت به فرم بارنامه
-    else:
-        form = CustomerForm()
-    return render(request, 'issuance/add/add_customer.html', {"form": form})
-
-@login_required(login_url='/accounts/login/')
-@never_cache  # جلوگیری از نمایش از کش
-def add_driver(request):
-    if request.method == 'POST':
-        form = DriverForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('create_new')  # بازگشت به فرم بارنامه
-    else:
-        form = DriverForm()
-    return render(request, 'issuance/add/add_driver.html', {"form": form})
-
-@login_required(login_url='/accounts/login/')
-@never_cache  # جلوگیری از نمایش از کش
-def add_vehicle(request):
-    if request.method == "POST":
-        form = VehicleForm(request.POST)
-        if form.is_valid():
-            form.save()
-            # vehicle = form.save()
-            # return redirect("show_plate", vehicle_id=vehicle.id)
-            return redirect('create_new')  # بازگشت به فرم بارنامه
-    else:
-        form = VehicleForm()
-    return render(request, "issuance/add/add_vehicle.html", {"form": form})
-
-
-def get_vehicle_by_driver(request):
-    driver_id = request.GET.get("driver_id")
-    try:
-        vehicle = Vehicle.objects.get(driver_id=driver_id)
-        data = {
-            "two_digit": vehicle.license_plate_two_digit,
-            "alphabet": vehicle.license_plate_alphabet,
-            "three_digit": vehicle.license_plate_three_digit,
-            "series": vehicle.license_plate_series,
-        }
-        return JsonResponse({"success": True, "vehicle": data})
-    except Vehicle.DoesNotExist:
-        return JsonResponse({"success": False, "error": "وسیله‌ای برای این راننده پیدا نشد"})
-
-@login_required(login_url='/accounts/login/')
-@never_cache  # جلوگیری از نمایش از کش
-def add_caption(request):
-    if request.method == "POST":
-        form = CaptionForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "✅ توضیحات با موفقیت ذخیره شد.")
-            return redirect("create_new")
-    else:
-        form = CaptionForm()
-
-    return render(request, 'issuance/add/add_caption.html', {"form": form})
-
-
-def save_bijak(request):
-    if request.method == "POST":
-        bijak = Bijak.objects.last()
-        if bijak:
-            bijak.tracking_code = request.POST.get("tracking_code")
-            bijak.issuance_date = request.POST.get("issuance_date")
-            bijak.value = request.POST.get("value")
-            bijak.insurance = request.POST.get("insurance")
-            bijak.loading_fee = request.POST.get("loading_fee")
-            bijak.freight = request.POST.get("freight")
-            bijak.caption = request.POST.get("caption")
-            bijak.sender = request.POST.get("sender")
-            bijak.receiver = request.POST.get("receiver")
-            bijak.driver = request.POST.get("driver")
-            bijak.vehicle = request.POST.get("vehicle")
-            bijak.cargo = request.POST.get("cargo")
-            bijak.save()
-        return HttpResponseRedirect(reverse("bijak_last_view"))
-
-
-#
-# def edit_sender(request):
-#     sender = None
-#
-#     if request.method == 'POST':
-#         name = request.POST.get('name')  # نام وارد شده توسط کاربر
-#         sender = Customer.objects.filter(name__iexact=name).first()
-#
-#         if sender:
-#             # اگر فرستنده پیدا شد → فرم پر بشه با اطلاعاتش
-#             form = SenderForm(request.POST, instance=sender)
-#         else:
-#             # اگر فرستنده جدید بود → فرم ایجاد رکورد جدید
-#             form = SenderForm(request.POST)
-#
-#         if form.is_valid():
-#             form.save()
-#             return redirect('create_new')
-#
-#     else:
-#         # GET request → نمایش فرم خالی
-#         form = SenderForm()
-#
-#     return render(request, 'edit/edit_customer.html', {"form": form})
-#
 
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
 def edit_customer(request):
     return render(request, 'issuance/edit/edit_customer.html')
 
+
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
 def edit_driver(request):
     return render(request, 'issuance/edit/edit_driver.html')
+
 
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
 def edit_vehicle(request):
     return render(request, 'issuance/edit/edit_vehicle.html')
 
+
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
 def edit_cargo(request):
     return render(request, 'issuance/edit/edit_cargo.html')
+
 
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش

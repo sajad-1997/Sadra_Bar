@@ -254,10 +254,10 @@ function enableSearch(inputId, resultsId, hiddenId, searchUrl, extraOptions = {}
                                         class="list-group-item list-group-item-action"
                                         data-id="${item.id}"
                                         data-name="${item.name}"
-                                        data-phone="${item.phone || ''}"
+                                        data-phone="${item.address || ''}"
                                         data-plate="${item.plate || ''}">
                                         <strong>${item.name}</strong>
-                                        ${item.phone ? " - " + item.phone : ""}
+                                        ${item.address ? " - " + item.address : ""}
                                  </button>`;
                     });
                 } else {

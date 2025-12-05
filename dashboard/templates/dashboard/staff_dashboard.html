@@ -150,14 +150,21 @@
 <nav>
     <ul>
         <li><a href="{% url 'home' %}">🏠 صفحه اصلی</a></li>
-        {% if permissions.can_access_dashboard %}
-            <li><a href="#">📊 داشبورد اصلی</a></li>
-        {% endif %}
         {% if permissions.can_manage_shipments %}
             <li><a href="{% url 'create_new' %}">🚚 صدور بارنامه‌ها</a></li>
+            <li><a href="{% url 'search_shipment' %}">🚚 جستجوی بارنامه‌ها</a></li>
         {% endif %}
         {% if permissions.can_view_reports %}
             <li><a href="#">📈 گزارش‌ها</a></li>
+        {% endif %}
+        {% if permissions.can_manage_customers %}
+            <li><a href="#">📈 لیست مشتریان</a></li>
+        {% endif %}
+        {% if permissions.can_manage_drivers %}
+            <li><a href="#">📈 لیست رانندگان</a></li>
+        {% endif %}
+        {% if permissions.can_access_dashboard %}
+            <li><a href="#">📊 داشبورد اصلی</a></li>
         {% endif %}
     </ul>
 </nav>

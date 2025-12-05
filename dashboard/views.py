@@ -32,3 +32,15 @@ def staff_dashboard(request):
         'user': request.user,
         'permissions': permissions
     })
+
+
+@role_required(['staff', 'manager', 'admin'])
+def home_dashboard(request):
+    permissions = None
+    if request.user.role == 'staff':
+        permissions = RolePermission.objects.filter(role='staff').first()
+
+    return render(request, 'dashboard/home_dashboard.html', {
+        'user': request.user,
+        'permissions': permissions
+    })
