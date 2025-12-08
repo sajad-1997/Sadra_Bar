@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>ویرایش اطلاعات راننده</title>
+    <link rel="stylesheet" href="{% static 'issuance/css/persian-datepicker.css' %}">
     <style>
         body {
             font-family: sans-serif;
@@ -75,12 +76,12 @@
 
     <div class="mb-3">
         <label>تاریخ تولد:</label>
-        <input type="text" id="driver-birth-date" name="birth_date" class="form-control">
+        <input type="text" id="driver-birth-date" name="birth_date" class="date-picker form-control">
     </div>
 
     <div class="mb-3">
         <label>تاریخ صدور گواهینامه:</label>
-        <input type="text" id="driver-certificate-date" name="certificate_date" class="form-control">
+        <input type="text" id="driver-certificate-date" name="certificate_date" class="date-picker form-control">
     </div>
 
     <div class="mb-3">
@@ -114,7 +115,17 @@
 <p id="msg"></p>
 
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- 1) jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- 2) PersianDate -->
+<script src="{% static 'issuance/persian-date.js' %}"></script>
+
+<!-- 3) Persian Datepicker -->
+<script src="{% static 'issuance/persian-datepicker.js' %}"></script>
+
+<!-- 4) init script -->
+<script src="{% static 'issuance/datetime-init.js' %}"></script>
 <script>
     $(document).ready(function () {
         let selectedIndex = -1;

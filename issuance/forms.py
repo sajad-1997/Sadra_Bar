@@ -41,9 +41,51 @@ class CustomerForm(PersianNumberFormMixin, forms.ModelForm):
         fields = '__all__'
         exclude = ['created_by', 'created_by_role', 'updated_by', 'updated_by_role']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # مشخص کردن فیلدهای الزامی در فرم
+        self.fields['name'].required = True
+        # self.fields['national_id'].required = True
+        # self.fields['postal'].required = True
+        self.fields['address'].required = True
+
+    # اعتبارسنجی فیلدهایی که باید کامل شوند
+    def clean(self):
+        cleaned_data = super().clean()
+
+        required_fields = ['name', 'address']
+        errors = {}
+
+        for f in required_fields:
+            if not cleaned_data.get(f):
+                errors[f] = "پر کردن این فیلد الزامی است."
+
+        if errors:
+            raise forms.ValidationError(errors)
+
+        return cleaned_data
+
 
 class DriverForm(PersianNumberFormMixin, forms.ModelForm):
-    numeric_fields = ['national_id', 'birth_date', 'phone', 'phone2', 'certificate', 'certificate_date']
+    numeric_fields = ['national_id', 'phone', 'phone2', 'certificate']
+
+    # اضافه کردن فیلدهای تاریخ با placeholder و کلاس date-picker
+    birth_date = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'date-picker form-control',
+            'placeholder': 'تاریخ تولد'
+        })
+    )
+
+    certificate_date = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'date-picker form-control',
+            'placeholder': 'تاریخ صدور گواهینامه'
+        })
+    )
 
     class Meta:
         model = Driver
@@ -52,15 +94,23 @@ class DriverForm(PersianNumberFormMixin, forms.ModelForm):
 
     def clean_birth_date(self):
         data = self.cleaned_data['birth_date']
-        if isinstance(data, str):
-            return persian_to_gregorian(data)
+        if isinstance(data, str) and data:
+            return persian_to_gregorian(data)  # تبدیل Jalali به میلادی
         return data
 
     def clean_certificate_date(self):
         data = self.cleaned_data['certificate_date']
-        if isinstance(data, str):
+        if isinstance(data, str) and data:
             return persian_to_gregorian(data)
         return data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # افزودن کلاس numeric-field به فیلدهای عددی
+        for field_name in self.numeric_fields:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.update({'class': 'numeric-field'})
 
 
 class VehicleForm(PersianNumberFormMixin, forms.ModelForm):
@@ -100,11 +150,31 @@ class CaptionForm(forms.ModelForm):
 
 
 class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
-    numeric_fields = ['tracking_code', 'issuance_date', 'value', 'total_fare', 'insurance', 'loading_fee', 'freight']
+    class Meta:
+        model = Bijak
+        fields = ('issuance_date', 'issuance_time', 'total_fare', 'value', 'insurance', 'loading_fee', 'unloading_fee',
+                  'scale_fee', 'freight',)  # فیلدهای مدلی
+        exclude = ('tracking_code',)
 
-    # فیلدهای نمایشی
-    tracking_code_display = forms.CharField(label="کد رهگیری", required=False, disabled=True)
-    issuance_date_display = forms.CharField(label="تاریخ صدور", required=False, disabled=True)
+    issuance_date = forms.CharField(
+        required=True,
+        label='تاریخ صدور بارنامه',
+        widget=forms.TextInput(attrs={
+            'class': 'date-picker form-control',
+            # 'placeholder': 'تاریخ صدور بارنامه'
+        })
+    )
+
+    issuance_time = forms.CharField(
+        required=True,
+        label='ساعت صدور بارنامه',
+        widget=forms.TextInput(attrs={
+            'class': 'time-picker form-control',
+            # 'placeholder': 'ساعت صدور بارنامه'
+        })
+    )
+    numeric_fields = ['tracking_code', 'value', 'total_fare', 'insurance',
+                      'loading_fee', 'unloading_fee', 'scale_fee', 'freight']
 
     # # فیلد چندتایی توضیحات
     # captions = forms.ModelMultipleChoiceField(
@@ -116,9 +186,9 @@ class ShipmentForm(PersianNumberFormMixin, forms.ModelForm):
 
     class Meta:
         model = Bijak
-        fields = ('value', 'total_fare', 'insurance', 'loading_fee', 'freight',)  # فیلدهای مدلی
-        exclude = ('tracking_code', 'issuance_date')
-
+        fields = ('issuance_date', 'issuance_time', 'total_fare', 'value', 'insurance', 'loading_fee', 'unloading_fee',
+                  'scale_fee', 'freight',)  # فیلدهای مدلی
+        exclude = ('tracking_code',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

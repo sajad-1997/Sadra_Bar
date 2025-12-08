@@ -83,11 +83,11 @@ class UserTrackingModel(models.Model):
 
 
 class Customer(UserTrackingModel):
-    name = models.CharField(max_length=50, verbose_name="نام و نام خانوادگی فرستنده")
+    name = models.CharField(max_length=50, blank=False, verbose_name="نام و نام خانوادگی فرستنده")
     national_id = models.CharField(max_length=50, unique=True, verbose_name="شناسه یا کد ملی", blank=True, null=True)
     postal = models.CharField(max_length=10, verbose_name="کد پستی", blank=True, null=True)
     phone = models.CharField(max_length=15, verbose_name="تلفن", blank=True, null=True)
-    address = models.TextField(verbose_name="آدرس")
+    address = models.TextField(blank=False, verbose_name="آدرس")
     phone2 = models.TextField(verbose_name="تلفن دوم", blank=True, null=True)
     caption = models.TextField(verbose_name="توضیحات", blank=True, null=True)
 
@@ -108,6 +108,10 @@ class Driver(UserTrackingModel):
     phone = models.CharField(max_length=15, verbose_name="شماره تلفن راننده")
     phone2 = models.CharField(max_length=15, blank=True, null=True, verbose_name="شماره تلفن دوم")
     address = models.TextField(blank=True, null=True, verbose_name="آدرس محل سکونت")
+    insurance_policy_number = models.CharField(max_length=50, blank=True, null=True,
+                                               verbose_name="شماره بیمه نامه شخص ثالث")
+    insurance_policy_expiry = models.CharField(max_length=50, blank=True, null=True,
+                                               verbose_name="تاریخ انقضاء بیمه نامه شخص ثالث")
 
     def __str__(self):
         return self.name
@@ -115,7 +119,7 @@ class Driver(UserTrackingModel):
 
 class Vehicle(UserTrackingModel):
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE, verbose_name="انتخاب راننده")
-    type = models.CharField(max_length=10, verbose_name="نوع وسیله")
+    type = models.CharField(max_length=50, verbose_name="نوع وسیله")
     license_plate_two_digit = models.CharField(max_length=2, verbose_name="دو رقم پلاک")
     license_plate_alphabet = models.CharField(max_length=1, verbose_name="الفبای پلاک")
     license_plate_three_digit = models.CharField(max_length=3, verbose_name="سه رقم پلاک")
@@ -139,6 +143,10 @@ class Cargo(UserTrackingModel):
         return self.name
 
 
+class Insurance(UserTrackingModel):
+    pass
+
+
 class Caption(UserTrackingModel):
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name="عنوان")
     content = models.TextField(blank=True, null=True, verbose_name="توضیحات")
@@ -149,11 +157,12 @@ class Caption(UserTrackingModel):
 
 class Bijak(UserTrackingModel):  # اکنون از UserTrackingModel ارث می‌برد
     tracking_code = models.CharField(max_length=15, unique=True, verbose_name="کد رهگیری")
-    issuance_date = jmodels.jDateField(verbose_name="تاریخ صدور")
+    issuance_date = jmodels.jDateField(verbose_name="تاریخ صدور بارنامه")
+    issuance_time = jmodels.jDateTimeField(verbose_name="ساعت صدور بارنامه")
     value = models.CharField(max_length=100, verbose_name="ارزش محموله")
     insurance = models.CharField(max_length=100, verbose_name="حق بیمه")
     loading_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه بارگیری")
-    evacuationـfee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه تخلیه")
+    unloading_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه تخلیه")
     scale_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه باسکول")
     freight = models.CharField(max_length=100, verbose_name="مبلغ کرایه")
     total_fare = models.CharField(max_length=100, verbose_name="کل کرایه پرداختی در مقصد")
@@ -163,14 +172,19 @@ class Bijak(UserTrackingModel):  # اکنون از UserTrackingModel ارث می
     driver = models.ForeignKey('Driver', on_delete=models.CASCADE, related_name='driver_bijaks')
     vehicle = models.ForeignKey('Vehicle', on_delete=models.CASCADE, related_name='vehicle_bijaks')
     cargo = models.ForeignKey('Cargo', on_delete=models.CASCADE, related_name='cargo_bijaks')
+    insurance_company = models.ForeignKey('Insurance', on_delete=models.CASCADE, related_name='insurance_bijaks')
 
-    status = models.CharField(max_length=30, choices=[
+    status = models.CharField(max_length=50, choices=[
         ('draft', 'پیش‌نویس'),
         ('issued', 'صادر شده'),
         ('sent', 'ارسال شده'),
         ('delivered', 'تحویل شده'),
+    ])
+    type = models.CharField(max_length=50, choices=[
         ('Fare change', 'تغییر کرایه'),
         ('informal', 'سوری'),
+        ('reprint', 'چاپ مجدد'),
+        ('driver_request', 'به درخواست راننده'),
     ])
 
     default_description = 'هرگونه آب خوردگی و خیس شدن بار به مسئولیت راننده میباشد.'

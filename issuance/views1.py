@@ -1,5 +1,7 @@
+import re
+from datetime import time
 from io import BytesIO
-import jdatetime
+
 import qrcode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -8,16 +10,47 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
 from django.http import JsonResponse
+# from .utils import num_to_word_rial
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
+from khayyam import JalaliDate
 
 from .forms import *
 from .models import Customer, Driver, Vehicle, Caption, Bijak
 
 
-# from .utils import num_to_word_rial
+def persian_to_english_numbers(value):
+    """تبدیل اعداد فارسی به انگلیسی برای ذخیره‌سازی"""
+    persian = '۰۱۲۳۴۵۶۷۸۹'
+    english = '0123456789'
+    table = str.maketrans(persian, english)
+    return value.translate(table)
+
+
+def convert_jalali_to_gregorian(date_str):
+    """
+    تبدیل تاریخ شمسی (۱۴۰۳/۱۰/۱۵) به میلادی
+    """
+    date_str = persian_to_english_numbers(date_str)
+    y, m, d = map(int, date_str.split('/'))
+    g = JalaliDate(y, m, d).todate()
+    return g  # returns Python date()
+
+
+def convert_time_farsi_to_time(time_str):
+    """
+    تبدیل ساعت فارسی به python.time()
+    """
+    time_str = persian_to_english_numbers(time_str)
+    match = re.match(r'^(\d{1,2}):(\d{1,2})$', time_str)
+    if not match:
+        return time(0, 0)
+
+    hour = int(match.group(1))
+    minute = int(match.group(2))
+    return time(hour, minute)
 
 
 def to_jalali(date_obj):
@@ -46,36 +79,48 @@ class StaffOnlyView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 # بیجک جدید (ثبت)
 # -----------------------
 def create_new(request):
-    """ایجاد بیجک جدید (بارنامه + محموله)"""
+    """ایجاد بیجک جدید"""
 
     if request.method == 'POST':
-        action = request.POST.get('action')  # دکمه ثبت یا چاپ
+        action = request.POST.get('action')
+
         sender_id = request.POST.get("sender")
         receiver_id = request.POST.get("receiver")
         driver_id = request.POST.get("driver")
-        selected_caption_id = request.POST.get("selected_caption")  # توضیح انتخابی
-        manual_text = request.POST.get("manual_description", "").strip()  # توضیح دستی
+
+        selected_caption_id = request.POST.get("selected_caption")
+        manual_text = request.POST.get("manual_description", "").strip()
+
+        # دریافت مقادیر تاریخ و ساعت از POST
+        jalali_date = request.POST.get("shipment-issuance_date")
+        jalali_time = request.POST.get("shipment-issuance_time")
+
+        # تبدیل تاریخ و زمان
+        try:
+            greg_date = convert_jalali_to_gregorian(jalali_date)
+            time_obj = convert_time_farsi_to_time(jalali_time)
+        except Exception as e:
+            messages.error(request, "خطایی در تبدیل تاریخ یا ساعت رخ داد.")
+            return redirect('create_new')
 
         shipment_form = ShipmentForm(request.POST, prefix='shipment')
         cargo_form = CargoForm(request.POST, prefix='cargo')
 
         if shipment_form.is_valid() and cargo_form.is_valid():
-            # دریافت اشیاء قبل از atomic
+
             try:
                 sender = get_object_or_404(Customer, id=sender_id)
                 receiver = get_object_or_404(Customer, id=receiver_id)
                 driver = get_object_or_404(Driver, id=driver_id)
-            except Exception:
+            except:
                 messages.error(request, "فرستنده، گیرنده یا راننده معتبر نیستند.")
                 return redirect('create_new')
 
             vehicle = Vehicle.objects.filter(driver_id=driver.id).order_by('-id').first()
 
             with transaction.atomic():
-                # ذخیره محموله
                 cargo = cargo_form.save()
 
-                # ایجاد بیجک
                 bijak = shipment_form.save(commit=False)
                 bijak.sender = sender
                 bijak.receiver = receiver
@@ -83,24 +128,23 @@ def create_new(request):
                 bijak.vehicle = vehicle
                 bijak.cargo = cargo
 
-                # توضیح انتخابی
+                # ثبت تاریخ و ساعت تبدیل‌شده
+                bijak.issuance_date = greg_date
+                bijak.issuance_time = time_obj
+
+                # توضیحات
                 if selected_caption_id:
                     try:
-                        selected_caption = Caption.objects.get(id=selected_caption_id)
-                        bijak.selected_caption = selected_caption
+                        bijak.selected_caption = Caption.objects.get(id=selected_caption_id)
                     except Caption.DoesNotExist:
                         pass
 
-                # توضیح دستی
                 if manual_text:
-                    # ذخیره در جدول Caption برای استفاده احتمالی آینده
                     Caption.objects.create(content=manual_text)
                     bijak.custom_caption = manual_text
 
-                # ذخیره بیجک
                 bijak.save()
 
-            # هدایت بعد از ذخیره
             if action == 'print':
                 return redirect('print', pk=bijak.pk)
 
@@ -108,14 +152,13 @@ def create_new(request):
             return redirect('preview', pk=bijak.pk)
 
         else:
-            messages.error(request, "خطا در اعتبارسنجی فرم‌ها. لطفاً دوباره بررسی کنید.")
-
+            messages.error(request, "خطا در اعتبارسنجی فرم‌ها.")
+            return redirect('create_new')
 
     else:
         shipment_form = ShipmentForm(prefix='shipment')
         cargo_form = CargoForm(prefix='cargo')
 
-    # پاس دادن تمام توضیحات موجود به قالب
     captions = Caption.objects.all().order_by('-id')
 
     return render(request, 'issuance/bijak/issuance_form.html', {
@@ -148,11 +191,14 @@ def add_driver(request):
     if request.method == 'POST':
         form = DriverForm(request.POST)
         if form.is_valid():
-            driver = form.save(commit=False)  # رکورد هنوز ذخیره نشده
-            driver.save()
-        return redirect('create_new')  # بازگشت به فرم بارنامه
+            driver = form.save()
+            messages.success(request, "راننده با موفقیت ذخیره شد.")
+            return redirect('create_new')  # بازگشت به فرم بارنامه
+        else:
+            messages.error(request, "خطا در ثبت فرم. لطفاً دوباره بررسی کنید.")
     else:
         form = DriverForm()
+
     return render(request, 'issuance/add/add_driver.html', {"form": form})
 
 
@@ -312,6 +358,7 @@ def search_shipment(request):
 
     return render(request, template_name, context)
 
+
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
 # -----------------------
@@ -393,33 +440,24 @@ def search_driver(request):
 def save_customer(request):
     if request.method == "POST":
         customer_id = request.POST.get("id")
-        name = request.POST.get("name")
-        national_id = request.POST.get("national_id")
-        postal = request.POST.get("postal")
-        phone = request.POST.get("phone")
-        address = request.POST.get("address")
 
-        if customer_id:  # اگر رکورد وجود داشت → ویرایش
+        if customer_id:  # ویرایش
             try:
                 customer = Customer.objects.get(id=customer_id)
-                customer.name = name
-                customer.national_id = national_id
-                customer.postal = postal
-                customer.phone = phone
-                customer.address = address
-                customer.save()
             except Customer.DoesNotExist:
                 return JsonResponse({"success": False, "error": "مشتری یافت نشد"})
-        else:  # ایجاد رکورد جدید
-            customer = Customer.objects.create(
-                name=name,
-                national_id=national_id,
-                postal=postal,
-                phone=phone,
-                address=address,
-            )
 
-        return JsonResponse({"success": True, "id": customer.id})
+            # فرم با instance و داده‌های POST
+            form = CustomerForm(request.POST, instance=customer)
+        else:  # ایجاد
+            form = CustomerForm(request.POST)
+
+        if form.is_valid():
+            customer = form.save()
+            return JsonResponse({"success": True, "id": customer.id})
+        else:
+            # ارورها را برای نمایش در کلاینت برگردان
+            return JsonResponse({"success": False, "errors": form.errors}, status=400)
 
     return JsonResponse({"success": False, "error": "Invalid request"})
 
@@ -461,6 +499,12 @@ def save_driver(request):
         phone = request.POST.get("phone")
         phone2 = request.POST.get("phone2")
         address = request.POST.get("address")
+
+        # تبدیل تاریخ Jalali به میلادی
+        if birth_date:
+            birth_date = persian_to_gregorian(birth_date)
+        if certificate_date:
+            certificate_date = persian_to_gregorian(certificate_date)
 
         if driver_id:  # ویرایش
             try:

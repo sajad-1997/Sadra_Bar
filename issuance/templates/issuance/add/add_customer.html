@@ -3,7 +3,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ویرایش اطلاعات مشتری</title>
+    <title>ثبت و ویرایش اطلاعات مشتری</title>
     <style>
         body {
             font-family: sans-serif;
@@ -39,6 +39,22 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
+        .error-field {
+            border: 2px solid red !important;
+            background-color: #ffe6e6;
+        }
+
+        .error-msg {
+            color: red;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        #msg {
+            margin-top: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -52,6 +68,7 @@
         <input type="text" id="customer-input" name="name" class="form-control">
         <div id="customer-results" class="list-group"
              style="display:none; z-index:1000; width:100%;"></div>
+        <div class="error-msg" id="error_name"></div>
     </div>
 
     <div class="mb-3">
@@ -72,6 +89,7 @@
     <div class="mb-3">
         <label>آدرس:</label>
         <input type="text" id="customer-address" name="address" class="form-control">
+        <div class="error-msg" id="error_address"></div>
     </div>
 
     <button type="submit" class="btn btn-success">ذخیره و ایجاد مشتری جدید</button>
@@ -80,159 +98,202 @@
     </button>
 </form>
 
-<p id="msg"></p>
+<div id="msg"></div>
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function () {
-        let selectedIndex = -1;
+$(document).ready(function () {
+    // -------------------------
+    // المان‌ها
+    // -------------------------
+    const nameField = $("#customer-input");
+    const addressField = $("#customer-address");
+    const submitBTN = $("#customer-form button[type=submit]");
+    const msgDiv = $("<div id='msg'></div>");
+    $("#customer-form").append(msgDiv); // پیام کلی زیر دکمه‌ها
 
-        // جستجو
-        $("#customer-input").on("keyup", function (e) {
-            let query = $(this).val();  // فاصله‌ها حفظ شوند
-
-            // اگر فیلد کاملاً خالی شد → همه فیلدها پاک شوند
-            if (query.length === 0) {
-                clearForm();
-                $("#customer-results").empty().hide();
-                selectedIndex = -1;
-                return;
-            }
-
-            // کنترل کلیدهای بالا/پایین/Enter
-            if (e.keyCode === 38) {  // بالا
-                if (selectedIndex > 0) selectedIndex--;
-                highlightItem();
-                return;
-            }
-            if (e.keyCode === 40) {  // پایین
-                if (selectedIndex < $("#customer-results .list-group-item").length - 1) selectedIndex++;
-                highlightItem();
-                return;
-            }
-            if (e.keyCode === 13) {  // Enter
-                e.preventDefault();
-                let selected = $("#customer-results .list-group-item").eq(selectedIndex);
-                if (selected.length) {
-                    chooseItem(selected);
-                }
-                return;
-            }
-
-            // AJAX جستجو
-            $.ajax({
-                url: "{% url 'search_customer' %}",
-                data: {q: query},
-                success: function (data) {
-                    let html = "";
-                    if (data.results.length > 0) {
-                        data.results.forEach(function (item) {
-                            html += `<button type="button"
-                                    class="list-group-item list-group-item-action"
-                                    data-id="${item.id}"
-                                    data-name="${item.name}"
-                                    data-national="${item.national_id || ''}"
-                                    data-postal="${item.postal || ''}"
-                                    data-phone="${item.phone || ''}"
-                                    data-address="${item.address || ''}">
-                                    <strong>${item.name}</strong>
-                                    ${item.phone ? " -{" + item.address + "}": "📂"}
-                                 </button>`;
-                        });
-                    } else {
-                        // ❌ نتیجه پیدا نشد → فقط نمایش لیست نتایج، فیلدها پاک نمی‌شوند
-                        html = `<div class="list-group-item">نتیجه‌ای یافت نشد</div>`;
-                    }
-                    $("#customer-results").html(html).show();
-                    selectedIndex = -1;
-                }
-            });
-        });
-
-        function highlightItem() {
-            $("#customer-results .list-group-item").removeClass("active");
-            if (selectedIndex >= 0) {
-                $("#customer-results .list-group-item").eq(selectedIndex).addClass("active");
-            }
+    // -------------------------
+    // فعال/غیرفعال کردن دکمه Submit
+    // -------------------------
+    function checkForm() {
+        if (nameField.val().trim() !== "" && addressField.val().trim() !== "") {
+            submitBTN.prop("disabled", false);
+        } else {
+            submitBTN.prop("disabled", true);
         }
+    }
 
-        function chooseItem(item) {
-            $("#customer-id").val(item.data("id"));
-            $("#customer-input").val(item.data("name"));
-            $("#customer-national").val(item.data("national"));
-            $("#customer-postal").val(item.data("postal"));
-            $("#customer-phone").val(item.data("phone"));
-            $("#customer-address").val(item.data("address"));
+    nameField.on("input", checkForm);
+    addressField.on("input", checkForm);
+
+    // -------------------------
+    // autocomplete مشتری
+    // -------------------------
+    let selectedIndex = -1;
+
+    nameField.on("keyup", function (e) {
+        let query = $(this).val();
+
+        if (query.length === 0) {
+            clearForm();
             $("#customer-results").empty().hide();
+            selectedIndex = -1;
+            return;
         }
 
-        // فرم خالی‌ساز: تمام فیلدهای مشتری را پاک می‌کند
-        function clearForm() {
-            $("#customer-id").val("");
-            $("#customer-input").val("");
-            $("#customer-national").val("");
-            $("#customer-postal").val("");
-            $("#customer-phone").val("");
-            $("#customer-address").val("");
-        }
+        // حرکت با کلیدها
+        if (e.keyCode === 38) { if (selectedIndex > 0) selectedIndex--; highlightItem(); return; }
+        if (e.keyCode === 40) { if (selectedIndex < $("#customer-results .list-group-item").length - 1) selectedIndex++; highlightItem(); return; }
+        if (e.keyCode === 13) { e.preventDefault(); let selected = $("#customer-results .list-group-item").eq(selectedIndex); if (selected.length) chooseItem(selected); return; }
 
-        // انتخاب با کلیک
-        $(document).on("click", "#customer-results .list-group-item", function () {
-            chooseItem($(this));
-        });
-
-        // ذخیره اطلاعات
-        $("#customer-form").submit(function (e) {
-            e.preventDefault();
-            $.ajax({
-                url: "{% url 'save_customer' %}",
-                type: "POST",
-                data: $(this).serialize(),
-                headers: {"X-CSRFToken": "{{ csrf_token }}"},
-                success: function (resp) {
-                    if (resp.success) {
-                        $("#msg").text("با موفقیت ذخیره شد (ID: " + resp.id + ")");
-                    } else {
-                        $("#msg").text("خطا: " + resp.error);
-                    }
-                },
-                error: function () {
-                    $("#msg").text("مشکلی در ارتباط با سرور پیش آمد");
+        // AJAX جستجو
+        $.ajax({
+            url: "/issuance/search/customer/",
+            data: {q: query},
+            success: function (data) {
+                let html = "";
+                if (data.results.length > 0) {
+                    data.results.forEach(function (item) {
+                        html += `<button type="button" class="list-group-item list-group-item-action"
+                                    data-id="${item.id}" data-name="${item.name}"
+                                    data-national="${item.national_id || ''}" data-postal="${item.postal || ''}"
+                                    data-phone="${item.phone || ''}" data-address="${item.address || ''}">
+                                    <strong>${item.name}</strong> ${item.phone ? " -{" + item.address + "}" : "📂"}
+                                </button>`;
+                    });
+                } else {
+                    html = `<div class="list-group-item">نتیجه‌ای یافت نشد</div>`;
                 }
-            });
-        });
-
-        // افزودن رکورد جدید به مشتری
-        $("#add-to-customer").click(function () {
-            let customerId = $("#customer-id").val();
-
-            if (!customerId) {
-                $("#msg").text("ابتدا یک مشتری را انتخاب کنید.");
-                return;
+                $("#customer-results").html(html).show();
+                selectedIndex = -1;
             }
-
-            $.ajax({
-                url: "{% url 'duplicate_customer' %}",
-                type: "POST",
-                data: $("#customer-form").serialize(),
-                headers: {"X-CSRFToken": "{{ csrf_token }}"},
-                success: function (resp) {
-                    if (resp.success) {
-                        $("#msg").text("رکورد جدید برای مشتری ایجاد شد (ID: " + resp.new_id + ")");
-                        $("#customer-id").val(resp.new_id);
-                    } else {
-                        $("#msg").text("خطا: " + resp.error);
-                    }
-                },
-                error: function () {
-                    $("#msg").text("مشکلی در ارتباط با سرور پیش آمد");
-                }
-            });
         });
     });
-</script>
 
+    function highlightItem() {
+        $("#customer-results .list-group-item").removeClass("active");
+        if (selectedIndex >= 0) $("#customer-results .list-group-item").eq(selectedIndex).addClass("active");
+    }
+
+    function chooseItem(item) {
+        $("#customer-id").val(item.data("id"));
+        nameField.val(item.data("name"));
+        $("#customer-national").val(item.data("national"));
+        $("#customer-postal").val(item.data("postal"));
+        $("#customer-phone").val(item.data("phone"));
+        addressField.val(item.data("address"));
+        $("#customer-results").empty().hide();
+        checkForm();
+    }
+
+    function clearForm() {
+        $("#customer-id").val("");
+        nameField.val("");
+        $("#customer-national").val("");
+        $("#customer-postal").val("");
+        $("#customer-phone").val("");
+        addressField.val("");
+        checkForm();
+    }
+
+    $(document).on("click", "#customer-results .list-group-item", function () {
+        chooseItem($(this));
+    });
+
+    // -------------------------
+    // submit فرم AJAX با ولیدیشن و هدایت به صفحه قبلی
+    // -------------------------
+    $("#customer-form").submit(function (e) {
+        e.preventDefault();
+
+        // پاک کردن خطاهای قبلی
+        $(".error-msg").html("");
+        $("input").removeClass("error-field");
+        $("textarea").removeClass("error-field");
+        msgDiv.html("");
+
+        // بررسی اولیه فیلدهای اجباری قبل از ارسال
+        let hasError = false;
+        if (nameField.val().trim() === "") {
+            $("#error_name").html("نام مشتری الزامی است");
+            nameField.addClass("error-field");
+            hasError = true;
+        }
+        if (addressField.val().trim() === "") {
+            $("#error_address").html("آدرس الزامی است");
+            addressField.addClass("error-field");
+            hasError = true;
+        }
+        if (hasError) {
+            msgDiv.html("لطفاً خطاهای فرم را اصلاح کنید");
+            return;
+        }
+
+        // ارسال AJAX
+        $.ajax({
+            url: "/issuance/save-sender/",
+            type: "POST",
+            data: $(this).serialize(),
+            headers: {"X-CSRFToken": "{{ csrf_token }}"},
+            success: function(resp) {
+                if (resp.success) {
+                    // هدایت کاربر به صفحه قبلی بعد از موفقیت
+                    window.history.back();
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 400 && xhr.responseJSON && xhr.responseJSON.errors) {
+                    let errors = xhr.responseJSON.errors;
+                    for (let field in errors) {
+                        $("#customer-" + field).addClass("error-field");
+                        $("#error_" + field).html(errors[field].map(e => e.message).join("<br>"));
+                    }
+                    msgDiv.html("لطفاً خطاهای فرم را اصلاح کنید");
+                } else {
+                    msgDiv.html("مشکلی در ارتباط با سرور پیش آمد");
+                }
+            }
+        });
+    });
+
+    // حذف کلاس خطا هنگام تایپ
+    $("input, textarea").on("input", function () {
+        $(this).removeClass("error-field");
+        let nameAttr = $(this).attr("name");
+        $("#error_" + nameAttr).html("");
+    });
+
+    // -------------------------
+    // duplicate رکورد مشتری
+    // -------------------------
+    $("#add-to-customer").click(function () {
+        let customerId = $("#customer-id").val();
+        if (!customerId) {
+            msgDiv.html("ابتدا یک مشتری را انتخاب کنید.");
+            return;
+        }
+
+        $.ajax({
+            url: "/issuance/duplicate-customer/",
+            type: "POST",
+            data: $("#customer-form").serialize(),
+            headers: {"X-CSRFToken": "{{ csrf_token }}"},
+            success: function(resp) {
+                if (resp.success) {
+                    msgDiv.html(`رکورد جدید برای مشتری ایجاد شد (ID: ${resp.new_id})`);
+                    $("#customer-id").val(resp.new_id);
+                } else {
+                    msgDiv.html("خطا: " + resp.error);
+                }
+            },
+            error: function() {
+                msgDiv.html("مشکلی در ارتباط با سرور پیش آمد");
+            }
+        });
+    });
+});
+</script>
 
 
 </body>
