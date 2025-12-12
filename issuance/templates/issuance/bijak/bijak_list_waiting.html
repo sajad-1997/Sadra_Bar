@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container mt-4">
+
+        <h3>بارنامه‌های در انتظار تأیید</h3>
+        <hr>
+
+        {% if bijaks %}
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                <tr>
+                    <th>شماره بارنامه</th>
+                    <th>راننده</th>
+                    <th>گیرنده</th>
+                    <th>مبلغ کرایه</th>
+                    <th>تاریخ صدور</th>
+                    <th>وضعیت</th>
+                    <th>عملیات</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for b in bijaks %}
+                    <tr>
+                        <td>{{ b.tracking_code }}</td>
+                        <td>{{ b.driver }}</td>
+                        <td>{{ b.receiver }}</td>
+                        <td>{{ b.total_fare }}</td>
+                        <td>{{ b.issuance_date }}</td>
+                        <td>
+                            {% if b.is_rejected %}
+                                <span class="text-danger">رد شده</span>
+                            {% elif b.is_approved %}
+                                <span class="text-success">تأیید شده</span>
+                            {% else %}
+                                <span class="text-warning">در انتظار تأیید</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'bijak_approve' b.id %}" class="btn btn-primary btn-sm">
+                                بررسی و تأیید
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info">
+                در حال حاضر هیچ بارنامه‌ای در انتظار تأیید نیست.
+            </div>
+        {% endif %}
+
+    </div>
+{% endblock %}

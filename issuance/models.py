@@ -143,10 +143,6 @@ class Cargo(UserTrackingModel):
         return self.name
 
 
-class Insurance(UserTrackingModel):
-    pass
-
-
 class Caption(UserTrackingModel):
     name = models.CharField(max_length=100, blank=True, null=True, verbose_name="عنوان")
     content = models.TextField(blank=True, null=True, verbose_name="توضیحات")
@@ -174,12 +170,19 @@ class Bijak(UserTrackingModel):  # اکنون از UserTrackingModel ارث می
     cargo = models.ForeignKey('Cargo', on_delete=models.CASCADE, related_name='cargo_bijaks')
     insurance_company = models.ForeignKey('Insurance', on_delete=models.CASCADE, related_name='insurance_bijaks')
 
-    status = models.CharField(max_length=50, choices=[
-        ('draft', 'پیش‌نویس'),
-        ('issued', 'صادر شده'),
-        ('sent', 'ارسال شده'),
-        ('delivered', 'تحویل شده'),
-    ])
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ('draft', 'پیش‌نویس'),
+            ('issued', 'صادر شده'),
+            ('waiting_approval', 'در انتظار تأیید مدیر'),
+            ('approved', 'تأیید شده'),
+            ('rejected', 'رد شده'),
+            ('sent', 'ارسال شده'),
+            ('delivered', 'تحویل شده'),
+        ],
+        default='draft'
+    )
     type = models.CharField(max_length=50, choices=[
         ('Fare change', 'تغییر کرایه'),
         ('informal', 'سوری'),
@@ -252,3 +255,22 @@ class Bijak(UserTrackingModel):  # اکنون از UserTrackingModel ارث می
 
     def __str__(self):
         return f"بیجک {self.tracking_code} - {self.issuance_date}"
+
+
+class BijakApprovalLog(models.Model):
+    bijak = models.ForeignKey(Bijak, on_delete=models.CASCADE, related_name="approval_logs")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=20, choices=[
+        ("sent_for_approval", "ارسال برای تایید"),
+        ("approved", "تایید شد"),
+        ("rejected", "رد شد"),
+    ])
+    description = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "تاریخچه تایید بیجک"
+        verbose_name_plural = "تاریخچه تایید بیجک ها"
+
+    def __str__(self):
+        return f"{self.bijak.tracking_code} - {self.action}"

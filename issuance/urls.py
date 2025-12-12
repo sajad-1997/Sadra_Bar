@@ -1,7 +1,11 @@
 from django.urls import path, include
 
+from issuance.views.bijak_approval import (
+    bijak_approve_view,
+    bijak_approve_submit,
+    bijak_list_waiting_approval,
+)
 from .views1 import *
-from report.views import *
 
 # from . import views
 
@@ -11,6 +15,15 @@ urlpatterns = [
     # path('print/', bijak_last_view, name='print'),
     path('print/<int:pk>/', bijak_last_view, name='print'),
     path('preview/<int:pk>/', preview_page, name='preview'),
+
+    # لیست بارنامه‌های در انتظار تایید
+    path('bijak/approvals/', bijak_list_waiting_approval, name='bijak_list_waiting_approval'),
+
+    # صفحه پیش‌نمایش و دکمه تایید یا رد
+    path('bijak/<int:pk>/approve/', bijak_approve_view, name='bijak_approve'),
+
+    # پردازش عملیات تایید یا رد
+    path('bijak/<int:pk>/approve/submit/', bijak_approve_submit, name='bijak_approve_submit'),
 
     # path('add-sender/', add_sender, name='add_sender'),
     path('add-customer/', add_customer, name='add_customer'),
@@ -38,4 +51,6 @@ urlpatterns = [
     path("bijak/<int:pk>/qr/", bijak_qr, name="bijak_qr"),
 
     path('report/', include('report.urls')),
+    path('manager/bijak/', include('issuance.urls.manager_urls')),
+
 ]

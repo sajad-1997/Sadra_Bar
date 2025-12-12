@@ -10,14 +10,16 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 # from .utils import num_to_word_rial
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from khayyam import JalaliDate
 
 from .forms import *
+# from .models import Customer, Driver, Vehicle, Caption, Bijak, BijakApprovalLog
 from .models import Customer, Driver, Vehicle, Caption, Bijak
 
 
@@ -166,6 +168,56 @@ def create_new(request):
         'cargo_form': cargo_form,
         'captions': captions,
     })
+
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
+# -----------------------
+# تاییده بیجک ها
+# -----------------------
+
+@login_required
+# def approve_bijak(request, bijak_id):
+#     if not request.user.is_staff:
+#         return HttpResponseForbidden("فقط مدیر اجازه تایید دارد")
+#
+#     bijak = get_object_or_404(Bijak, id=bijak_id)
+#
+#     bijak.status = "approved"
+#     bijak.save()
+#
+#     BijakApprovalLog.objects.create(
+#         bijak=bijak,
+#         user=request.user,
+#         action="approved",
+#         description="تایید توسط مدیر"
+#     )
+#
+#     messages.success(request, "بیجک تایید شد و مجوز چاپ گرفت.")
+#     return redirect("manager_waiting_list")
+
+
+@login_required
+# def reject_bijak(request, bijak_id):
+#     if not request.user.is_staff:
+#         return HttpResponseForbidden("فقط مدیر اجازه رد دارد")
+#
+#     bijak = get_object_or_404(Bijak, id=bijak_id)
+#
+#     reason = request.POST.get("reason")
+#
+#     bijak.status = "rejected"
+#     bijak.save()
+#
+#     BijakApprovalLog.objects.create(
+#         bijak=bijak,
+#         user=request.user,
+#         action="rejected",
+#         description=reason
+#     )
+#
+#     messages.error(request, "بیجک رد شد.")
+#     return redirect("manager_waiting_list")
 
 
 @login_required(login_url='/accounts/login/')
