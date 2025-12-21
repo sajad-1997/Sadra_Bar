@@ -1,0 +1,65 @@
+<div class="sidebar">
+{#    <h4 class="text-center mb-4" style="color:#8f94fb;">منوی دسترسی</h4>#}
+    <ul class="sidebar-menu list-unstyled p-0 m-0">
+        <li><a href="{% url 'issuance:crud:create_new' %}" class="d-block">📝 صدور بارنامه</a></li>
+        <li><a href="{% url 'issuance:search:search_shipment' %}" class="d-block">🔍 جستجوی بارنامه‌ها</a></li>
+        <li><a href="{% url 'report_dashboard' %}" class="d-block">📊 گزارش بارنامه‌ها</a></li>
+        <li><a href="#" class="d-block">💰 گزارش مبالغ بیمه</a></li>
+        <li><a href="#" class="d-block">👥 لیست مشتریان</a></li>
+        <li><a href="#" class="d-block">🚛 لیست رانندگان</a></li>
+        <li><a href="#" class="d-block">🧾 لیست کاربران</a></li>
+        <li><a href="#" class="d-block">📍 موقعیت‌یابی رانندگان</a></li>
+    </ul>
+</div>
+
+<!-- استایل‌های داخلی Sidebar (هماهنگ با dashboard.css) -->
+<style>
+.sidebar {
+    width: 250px;
+    padding: 1.5rem 1rem;
+    background-color: var(--sidebar-bg, #1e1f29);
+    box-shadow: 0 0 10px var(--shadow, rgba(0,0,0,0.05));
+    transition: background-color 0.3s ease;
+    height: 100vh;
+}
+
+.sidebar h4 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.sidebar-menu li {
+    margin-bottom: 0.6rem;
+}
+
+.sidebar-menu li a {
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    color: var(--text-color, #dcdcdc);
+    text-decoration: none;
+    transition: all 0.25s ease;
+    display: block;
+}
+
+.sidebar-menu li a:hover,
+.sidebar-menu li a.active {
+    background: var(--link-hover, #3a3b47);
+    color: #fff;
+}
+
+/* ریسپانسیو */
+@media (max-width: 992px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        box-shadow: none;
+        text-align: center;
+    }
+    .sidebar-menu li a {
+        display: inline-block;
+        margin: 0.3rem;
+    }
+}
+</style>

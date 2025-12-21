@@ -14,11 +14,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.shortcuts import render
 from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
 
 
 def forbidden_view(request):
@@ -28,9 +28,10 @@ def forbidden_view(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
-    path('dashboard/', include('dashboard.urls')),
+    path('dashboard/', include(('dashboard.urls', 'dashboard'), namespace='dashboard')),
     path('', include('homePage.urls')),
-    path('issuance/', include('issuance.urls')),
+    path('issuance/', include(('issuance.urls', 'issuance'), namespace='issuance')),
+    path('report/', include(('report.urls', 'report'), namespace='report')),
     path('forbidden/', forbidden_view, name='forbidden'),
 
 ]

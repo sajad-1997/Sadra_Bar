@@ -1,9 +1,11 @@
-{% extends 'dashboard/base.html' %}
+{% extends "issuance/search/base.html" %}
 {% load static %}
+{% load humanize %}
 {% block content %}
 
     <div class="container mt-4">
         <h2 class="mb-3">📊 گزارش بارنامه‌ها</h2>
+
 
         <!-- 🔹 فیلتر -->
         <form method="get" class="card p-3 mb-4">
@@ -51,25 +53,61 @@
             <canvas id="chart" height="100"></canvas>
         </div>
 
-        <!-- 🔹 جدول داده‌ها -->
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
+        <!-- 🔹 کارت داده‌ها موبایل -->
+        {% for b in bijaks %}
+            <div class="bijak-card">
+                <div class="bijak-header">ردیف: {{ b.id }} | شماره بارنامه: {{ b.tracking_code }}</div>
+                <div class="bijak-row">
+                    <span>زمان صدور: {{ b.issuance_datetime }}</span>
+                </div>
+                <div class="bijak-row">
+                    <span>فرستنده: {{ b.sender.name }}</span><span>گیرنده: {{ b.receiver.name }}</span>
+                </div>
+                <div class="bijak-row">
+                    <span>کل کرایه: {{ b.total_fare|intcomma }} ریال</span><span>ارزش محموله: {{ b.value|intcomma }} ریال</span>
+                </div>
+                <div class="bijak-row">
+                    <span>نام محموله: {{ b.cargo.name }}</span><span>مبدا: {{ b.cargo.origin }}</span>
+                </div>
+                <div class="bijak-row">
+                    <span>مقصد: {{ b.cargo.destination }}</span><span>راننده: {{ b.driver.name }}</span>
+                </div>
+                <div class="btn-group-card">
+                    <a href="{% url 'issuance:crud:preview' b.pk %}" class="btn btn-sm btn-info w-100">مشاهده</a>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-center mt-3">هیچ داده‌ای یافت نشد</p>
+        {% endfor %}
+
+
+        <!-- 🔹 جدول داده‌ها دسکتاب -->
+        {#        <table class="table table-bordered table-striped">#}
+        <table class="desktop-table">
+            <thead>
             <tr>
+                <th>ردیف</th>
                 <th>کد رهگیری</th>
+                <th>تاریخ صدور</th>
                 <th>فرستنده</th>
                 <th>گیرنده</th>
-                <th>تاریخ صدور</th>
                 <th>کرایه کل</th>
+                <th>عملیات</th>
             </tr>
             </thead>
             <tbody>
             {% for b in bijaks %}
                 <tr>
+                    <td>{{ b.id }}</td>
                     <td>{{ b.tracking_code }}</td>
+                    <td>{{ b.issuance_datetime }}</td>
                     <td>{{ b.sender.name }}</td>
                     <td>{{ b.receiver.name }}</td>
-                    <td>{{ b.issuance_date }}</td>
                     <td>{{ b.total_fare }}</td>
+                    <td>
+                        <a href="{% url 'issuance:crud:preview' b.pk %}" class="btn btn-sm btn-info">مشاهده</a>
+
+                    </td>
                 </tr>
             {% empty %}
                 <tr>
@@ -118,7 +156,7 @@
                 datasets: [{
                     label: 'تعداد بارنامه‌ها',
                     data: data,
-                    borderWidth: 2,
+                    borderWidth: 4,
                     fill: true,
                     tension: 0.3
                 }]

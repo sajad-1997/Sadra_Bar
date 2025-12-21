@@ -119,7 +119,35 @@ class Driver(UserTrackingModel):
 
 class Vehicle(UserTrackingModel):
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE, verbose_name="انتخاب راننده")
-    type = models.CharField(max_length=50, verbose_name="نوع وسیله")
+    type = models.CharField(
+        max_length=50,
+        verbose_name='نوع ناوگان',
+        choices=[
+            ('peykan', 'وانت پیکان'),
+            ('neysan', 'وانت نیسان'),
+            ('arisan', 'وانت آریسان'),
+            ('zamyad', 'وانت زامیاد'),
+            ('Bari 20T', 'باری چوبی ۱۷ تا ۲۰ تن'),
+        ])
+    # room_model = models.CharField(
+    #     max_length=50,
+    #     verbose_name='مدل اتاق ناوگان',
+    #     choices=[
+    #         ('Normal', 'معمولی'),
+    #         ('flat_floor', 'کف صاف'),
+    #         ('sofa_floor', 'کف مبلی'),
+    #     ],
+    #     default='Normal')
+    # Animal_feed_license = models.CharField(
+    #     max_length=6,
+    #     null=True,
+    #     blank=True,
+    #     verbose_name='مجوز حمل خوراک دام',
+    #     choices=[
+    #         ('No', 'ندارد'),
+    #         ('Yes', 'دارد'),
+    #     ], default='No')
+    # veterinary_code = models.CharField(max_length=7, blank=True, null=True, verbose_name="کد دامپزشکی")
     license_plate_two_digit = models.CharField(max_length=2, verbose_name="دو رقم پلاک")
     license_plate_alphabet = models.CharField(max_length=1, verbose_name="الفبای پلاک")
     license_plate_three_digit = models.CharField(max_length=3, verbose_name="سه رقم پلاک")
@@ -153,8 +181,7 @@ class Caption(UserTrackingModel):
 
 class Bijak(UserTrackingModel):  # اکنون از UserTrackingModel ارث می‌برد
     tracking_code = models.CharField(max_length=15, unique=True, verbose_name="کد رهگیری")
-    issuance_date = jmodels.jDateField(verbose_name="تاریخ صدور بارنامه")
-    issuance_time = jmodels.jDateTimeField(verbose_name="ساعت صدور بارنامه")
+    issuance_datetime = jmodels.jDateTimeField(verbose_name="تاریخ و ساعت صدور بارنامه")
     value = models.CharField(max_length=100, verbose_name="ارزش محموله")
     insurance = models.CharField(max_length=100, verbose_name="حق بیمه")
     loading_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه بارگیری")
@@ -168,10 +195,12 @@ class Bijak(UserTrackingModel):  # اکنون از UserTrackingModel ارث می
     driver = models.ForeignKey('Driver', on_delete=models.CASCADE, related_name='driver_bijaks')
     vehicle = models.ForeignKey('Vehicle', on_delete=models.CASCADE, related_name='vehicle_bijaks')
     cargo = models.ForeignKey('Cargo', on_delete=models.CASCADE, related_name='cargo_bijaks')
-    insurance_company = models.ForeignKey('Insurance', on_delete=models.CASCADE, related_name='insurance_bijaks')
+    # insurance_company = models.ForeignKey('insurance.InsuranceCompany', null=True, blank=True, on_delete=models.SET_NULL,
+    #                                       default='بیمه ایران', related_name='insurance_bijaks')
 
     status = models.CharField(
         max_length=50,
+        verbose_name='وضعیت بارنامه',
         choices=[
             ('draft', 'پیش‌نویس'),
             ('issued', 'صادر شده'),
@@ -183,22 +212,30 @@ class Bijak(UserTrackingModel):  # اکنون از UserTrackingModel ارث می
         ],
         default='draft'
     )
-    type = models.CharField(max_length=50, choices=[
-        ('Fare change', 'تغییر کرایه'),
-        ('informal', 'سوری'),
-        ('reprint', 'چاپ مجدد'),
-        ('driver_request', 'به درخواست راننده'),
-    ])
+    type = models.CharField(
+        max_length=50,
+        verbose_name='نوع بارنامه',
+        choices=[
+            ('Fare change', 'تغییر کرایه'),
+            ('informal', 'سوری'),
+            ('reprint', 'چاپ مجدد'),
+            ('driver_request', 'به درخواست راننده'),
+        ])
 
     default_description = 'هرگونه آب خوردگی و خیس شدن بار به مسئولیت راننده میباشد.'
 
     selected_caption = models.ForeignKey(
-        'Caption', on_delete=models.SET_NULL, null=True, blank=True, related_name='caption_bijaks'
-    )
+        'Caption', on_delete=models.SET_NULL, null=True, blank=True, related_name='caption_bijaks')
     custom_caption = models.TextField(blank=True, null=True)
     final_description = models.TextField(blank=True, null=True)
 
     _lock = threading.Lock()  # جلوگیری از برخورد در درخواست‌ها
+
+    def issuance_date(self):
+        return self.issuance_datetime.date()
+
+    def issuance_time(self):
+        return self.issuance_datetime.time()
 
     @property
     def num_in_words(self):
@@ -237,7 +274,6 @@ class Bijak(UserTrackingModel):  # اکنون از UserTrackingModel ارث می
             return new_code
 
     def save(self, *args, **kwargs):
-
         parts = [self.default_description]
         if self.selected_caption:
             parts.append(self.selected_caption.content)
@@ -254,7 +290,7 @@ class Bijak(UserTrackingModel):  # اکنون از UserTrackingModel ارث می
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"بیجک {self.tracking_code} - {self.issuance_date}"
+        return f"بیجک {self.tracking_code} - {self.issuance_datetime}"
 
 
 class BijakApprovalLog(models.Model):

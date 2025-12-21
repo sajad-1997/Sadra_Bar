@@ -60,6 +60,7 @@
     </form>
 </div>
 
+<div id="result" style="margin-top:15px;text-align:center;"></div>
 
 {##}
 {#<h2>ورود شماره پلاک خودرو</h2>#}
@@ -71,27 +72,64 @@
 {#<div class="result" id="result"></div>#}
 
 <script>
-    function parsePlate() {
-        const license_plate_three_digit = document.getElementById('id_part1').value.trim();
-        const license_plate_alphabet = document.getElementById('id_letter').value.trim();
-        const license_plate_two_digit = document.getElementById('id_part2').value.trim();
-        const license_plate_series = document.getElementById('id_province').value.trim();
+    document.addEventListener('DOMContentLoaded', function () {
 
-        if (/^\d{2}$/.test(license_plate_three_digit) && /^[اآبپتثجچحخدذرزسشصضطظعغفقکگلمنوهی]$/.test(license_plate_alphabet)
-            && /^\d{3}$/.test(license_plate_two_digit) && /^\d{2}$/.test(license_plate_series)) {
-            document.getElementById('result').innerHTML = `
-        <div class="plate" style="display:inline-block;padding:10px 15px;
-             border:2px solid #000;border-radius:6px;background:#fefefe;
-             font-weight:bold;font-size:22px;letter-spacing:3px;">
-          ${license_plate_three_digit} - ${license_plate_alphabet} - ${license_plate_two_digit}
-          <span style="margin-right:10px;font-size:16px;
-                color:#0d47a1;font-weight:bold;"> ایران </span>
-        </div>
-      `;
-        } else {
-            document.getElementById('result').innerHTML = "<p style='color:red'>فرمت فیلدها معتبر نیست!</p>";
+        /* ===== کنترل مجوز خوراک دام ===== */
+        const animalLicenseSelect = document.getElementById('id_animal_license');
+        const veterinaryCodeInput = document.getElementById('id_veterinary_code');
+
+        function toggleVeterinaryCode() {
+            if (animalLicenseSelect.value === 'Yes') {
+                veterinaryCodeInput.disabled = false;
+            } else {
+                veterinaryCodeInput.disabled = true;
+                veterinaryCodeInput.value = '';
+            }
         }
-    }
+
+        if (animalLicenseSelect && veterinaryCodeInput) {
+            animalLicenseSelect.addEventListener('change', toggleVeterinaryCode);
+            toggleVeterinaryCode(); // اجرای اولیه
+        }
+
+        /* ===== نمایش پلاک ===== */
+        window.parsePlate = function () {
+            const part2 = document.getElementById('id_license_plate_two_digit').value.trim();
+            const letter = document.getElementById('id_license_plate_alphabet').value.trim();
+            const part3 = document.getElementById('id_license_plate_three_digit').value.trim();
+            const series = document.getElementById('id_license_plate_series').value.trim();
+
+            const plateRegexLetter = /^[اآبپتثجچحخدذرزسشصضطظعغفقکگلمنوهی]$/;
+
+            if (
+                /^\d{2}$/.test(part2) &&
+                plateRegexLetter.test(letter) &&
+                /^\d{3}$/.test(part3) &&
+                /^\d{2}$/.test(series)
+            ) {
+                document.getElementById('result').innerHTML = `
+                <div style="
+                    display:inline-block;
+                    padding:10px 15px;
+                    border:2px solid #000;
+                    border-radius:6px;
+                    background:#fefefe;
+                    font-weight:bold;
+                    font-size:22px;
+                    letter-spacing:3px;">
+                    ${part2} ${letter} ${part3}
+                    <span style="margin-right:10px;font-size:16px;color:#0d47a1;">
+                        ایران ${series}
+                    </span>
+                </div>
+            `;
+            } else {
+                document.getElementById('result').innerHTML =
+                    "<p style='color:red'>فرمت پلاک معتبر نیست</p>";
+            }
+        };
+
+    });
 </script>
 
 </body>

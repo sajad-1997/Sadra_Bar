@@ -17,11 +17,11 @@ class CustomLoginView(LoginView):
     def get_success_url(self):
         user = self.request.user
         if user.role == 'admin':
-            return reverse_lazy('admin_dashboard')
+            return reverse_lazy('dashboard:admin_dashboard')
         elif user.role == 'manager':
-            return reverse_lazy('manager_dashboard')
+            return reverse_lazy('dashboard:manager_dashboard')
         elif user.role == 'staff':
-            return reverse_lazy('staff_dashboard')
+            return reverse_lazy('dashboard:staff_dashboard')
         else:
             return reverse_lazy('home')
 
@@ -49,9 +49,9 @@ class CustomLogoutView(LogoutView):
 
     next_page = '/'  # مقصد بعد از خروج
 
-    def get(self, request, *args, **kwargs):
-        """اجازه خروج با GET بدون نیاز به CSRF"""
-        return self.post(request, *args, **kwargs)
+    # def get(self, request, *args, **kwargs):
+    #     """اجازه خروج با GET بدون نیاز به CSRF"""
+    #     return self.post(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         # ذخیره نام کاربر قبل از logout
@@ -77,15 +77,15 @@ def go_to_dashboard(request):
 
     # مدیر کل سیستم → داشبورد مدیر کل
     if user.is_admin():
-        return redirect("home_dashboard")
+        return redirect("dashboard:admin_dashboard")
 
     # مدیریت → داشبورد مدیریت
     if user.is_manager():
-        return redirect("manager_dashboard")
+        return redirect("dashboard:manager_dashboard")
 
     # کارمند → داشبورد کارمند
     if user.is_staff_role():
-        return redirect("staff_dashboard")
+        return redirect("dashboard:staff_dashboard")
 
     # حالت fallback
     return redirect("home")

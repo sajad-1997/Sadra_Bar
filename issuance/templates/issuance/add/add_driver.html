@@ -7,38 +7,45 @@
     <link rel="stylesheet" href="{% static 'issuance/css/persian-datepicker.css' %}">
     <style>
         body {
-            font-family: sans-serif;
-            direction: rtl;
-            margin: 50px;
+            font-family: Tahoma, sans-serif;
+            background: #f1f1f1;
+            padding: 20px;
         }
 
-        .form-box {
-            max-width: 600px;
-            margin: auto;
+        form {
+            background: #fff;
             padding: 20px;
-            border: 1px solid #ccc;
             border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            margin: auto;
         }
 
         label {
             display: block;
-            margin-top: 10px;
+            margin: 10px 0 5px;
         }
 
-        input, textarea {
+        input, select {
             width: 100%;
             padding: 8px;
-            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
         }
 
         button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #28a745;
-            color: #fff;
+            margin-top: 15px;
+            width: 100%;
+            padding: 10px;
+            background: #1976d2;
             border: none;
+            color: white;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        button:hover {
+            background: #0d47a1;
         }
     </style>
 </head>
@@ -53,6 +60,8 @@
         <input type="text" id="driver-input" name="name" class="form-control">
         <div id="driver-results" class="list-group"
              style="display:none; position:absolute; z-index:1000; width:100%;"></div>
+                     <div class="error-msg" id="error_name"></div>
+
     </div>
     <br>
     <br>
@@ -62,6 +71,8 @@
     <div class="mb-3">
         <label>کد ملی:</label>
         <input type="text" id="driver-national-id" name="national_id" class="form-control">
+                <div class="error-msg" id="error_national_id"></div>
+
     </div>
 
     <div class="mb-3">
@@ -87,11 +98,15 @@
     <div class="mb-3">
         <label>شماره گواهینامه:</label>
         <input type="text" id="driver-certificate" name="certificate" class="form-control">
+        <div class="error-msg" id="error_certificate"></div>
+
     </div>
 
     <div class="mb-3">
         <label>شماره تلفن راننده:</label>
         <input type="text" id="driver-phone" name="phone" class="form-control">
+        <div class="error-msg" id="error_phone"></div>
+
     </div>
 
     <div class="mb-3">
@@ -105,8 +120,18 @@
     </div>
 
     <div class="mb-3">
-        <label>شماره پلاک خودرو:</label>
-        <input type="text" id="driver-plate" name="plate" class="form-control" readonly>
+        <label>شماره هوشمند راننده:</label>
+        <input type="text" id="driver-smart-card" name="driver_smart_card" class="form-control" >
+    </div>
+
+    <div class="mb-3">
+        <label>شماره بیمه شخص ثالث:</label>
+        <input type="text" id="driver-insurance-policy-number" name="insurance_policy_number" class="form-control" >
+    </div>
+
+    <div class="mb-3">
+        <label>تاریخ پایان اعتبار بیمه شخص ثالث:</label>
+        <input type="text" id="driver-insurance-policy-expiry" name="insurance_policy_expiry" class="form-control" >
     </div>
 
     <button type="submit" class="btn btn-success">ذخیره</button>
@@ -163,7 +188,7 @@
             }
 
             $.ajax({
-                url: "{% url 'search_driver' %}",
+                url: "{% url 'issuance:search:search_driver' %}",
                 data: {q: query},
                 success: function (data) {
                     let html = "";
@@ -176,13 +201,16 @@
                                     data-national_id="${item.national_id || ''}"
                                     data-residence="${item.residence || ''}"
                                     data-father_name="${item.father_name || ''}"
-                                    data-birth-date="${item.birth_date || ''}"
+                                    data-birth_date="${item.birth_date || ''}"
                                     data-certificate_date="${item.certificate_date || ''}"
                                     data-certificate="${item.certificate || ''}"
                                     data-phone="${item.phone || ''}"
                                     data-phone2="${item.phone2 || ''}"
                                     data-address="${item.address || ''}"
-                                    data-plate_number="${item.plate_number || ''}">
+                                    data-plate_number="${item.plate_number || ''}"
+                                    data-driver_smart_card="${item.driver_smart_card || ''}"
+                                    data-insurance_policy_number="${item.insurance_policy_number || ''}"
+                                    data-insurance_policy_expiry="${item.insurance_policy_expiry || ''}">
                                     <strong>${item.name}</strong>
                                     ${item.phone ? " - " + item.phone : ""}
                                  </button>`;
@@ -217,6 +245,9 @@
             $("#driver-phone2").val(item.data("phone2"));
             $("#driver-address").val(item.data("address"));
             $("#driver-plate").val(item.data("plate"));
+            $("#driver-driver-smart-card").val(item.data("driver_smart_card"));
+            $("#driver-insurance-policy-number").val(item.data("insurance_policy_number"));
+            $("#driver-insurance-policy-expiry").val(item.data("insurance_policy_expiry"));
 
             $("#driver-results").empty().hide();
         }
@@ -234,6 +265,9 @@
             $("#driver-phone").val("");
             $("#driver-phone2").val("");
             $("#driver-address").val("");
+            $("#driver-driver-smart-card").val("");
+            $("#driver-insurance-policy-number").val("");
+            $("#driver-insurance-policy-expiry").val("");
         }
 
         // انتخاب با کلیک
@@ -243,24 +277,36 @@
 
         // ذخیره اطلاعات
         $("#driver-form").submit(function (e) {
-            e.preventDefault();
-            $.ajax({
-                url: "{% url 'save_driver' %}",
-                type: "POST",
-                data: $(this).serialize(),
-                headers: {"X-CSRFToken": "{{ csrf_token }}"},
-                success: function (resp) {
-                    if (resp.success) {
-                        $("#msg").text("با موفقیت ذخیره شد (ID: " + resp.id + ")");
-                    } else {
-                        $("#msg").text("خطا: " + resp.error);
-                    }
-                },
-                error: function () {
-                    $("#msg").text("مشکلی در ارتباط با سرور پیش آمد");
-                }
-            });
+        e.preventDefault();
+
+         $(".form-control").removeClass("is-invalid");
+
+        $.ajax({
+        url: "{% url 'issuance:crud:save_driver' %}",
+        type: "POST",
+        data: $(this).serialize(),
+        headers: {"X-CSRFToken": "{{ csrf_token }}"},
+        success: function (resp) {
+
+            if (resp.success) {
+                window.location.href = resp.redirect;   // ← بازگشت به صفحه قبل
+                return;
+            }
+
+            // اگر خطا داشت
+            $("#msg").text(resp.error);
+
+            if (resp.field) {
+                $(`[name="${resp.field}"]`).addClass("is-invalid");
+            }
+        },
+
+        error: function () {
+            $("#msg").text("مشکلی در ارتباط با سرور پیش آمد");
+        }
+    });
         });
+
     });
 </script>
 

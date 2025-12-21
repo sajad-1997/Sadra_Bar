@@ -139,11 +139,12 @@
     <h4>پنل مدیریت</h4>
     <a href="#">📊 گزارش تعداد بارنامه‌ها</a>
     <a href="#">💰 گزارش مبالغ بیمه</a>
+    <a href="{% url 'issuance:search:search_shipment' %}">🔍 جستجوی بارنامه‌ها</a>
     <hr>
     <h4>پنل عملیاتی</h4>
     <a href="#">📍 اعلام بار</a>
-    <a href="{% url 'create_new' %}">📝 صدور بارنامه</a>
-    <a href="{% url 'search_shipment' %}">🔍 جستجوی بارنامه‌ها</a>
+    <a href="{% url 'issuance:crud:create_new' %}">📝 صدور بارنامه</a>
+    <a href="{% url 'issuance:manager:waiting_list' %}">📝 تایید/رد بارنامه</a>
     <a href="#">📍 موقعیت‌یابی رانندگان</a>
     <hr>
     <h4>پنل مشاهده</h4>

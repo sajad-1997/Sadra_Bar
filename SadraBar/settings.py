@@ -52,7 +52,13 @@ INSTALLED_APPS = [
     'issuance',
     'jalali_date',
     'report',
+    'insurance',
+    'django_celery_beat',
+
 ]
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_REDIRECT_URL = 'dashboard'   # صفحه‌ای که بعد از لاگین می‌ره
@@ -148,7 +154,7 @@ TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 USE_L10N = True
-USE_TZ = True
+USE_TZ = False
 
 # Static files (css, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/

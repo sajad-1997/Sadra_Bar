@@ -214,14 +214,19 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <h4>منوی دسترسی</h4>
-        <a href="{% url 'create_new' %}">📝 صدور بارنامه</a>
-        <a href="{% url 'search_shipment' %}">🔍 جستجوی بارنامه‌ها</a>
-        <a href="{% url 'report_dashboard' %}">📊 گزارش بارنامه‌ها</a>
-        <a href="#">💰 گزارش مبالغ بیمه</a>
-        <a href="#">👥 لیست مشتریان</a>
-        <a href="#">🚛 لیست رانندگان</a>
+        <a href="{% url 'issuance:crud:create_new' %}">📝 صدور بارنامه</a>
+        <a href="{% url 'issuance:search:search_shipment' %}">🔍 جستجوی بارنامه‌ها</a>
+        <a href="{% url 'issuance:manager:waiting_list' %}">🗂️ بررسی بارنامه‌ها</a>
+        <a href="{% url 'report:report_dashboard' %}">📊 گزارش بارنامه‌ها</a>
+{#        <a href="#">📊 گزارش بارنامه‌ها</a>#}
+        <a href="{% url 'issuance:crud:add_customer' %}">👥 لیست مشتریان</a>
+        <a href="{% url 'issuance:crud:add_driver' %}">🚛 لیست رانندگان</a>
+{#        <a href="{% url 'auth:user_list' %}">🧾 لیست کاربران</a>#}
         <a href="#">🧾 لیست کاربران</a>
+{#        <a href="{% url 'issuance:manager:driver_location' %}">📍 موقعیت‌یابی رانندگان</a>#}
         <a href="#">📍 موقعیت‌یابی رانندگان</a>
+{#        <a href="{% url 'issuance:crud:insurance_report' %}">💰 گزارش مبالغ بیمه</a>#}
+        <a href="#">💰 گزارش مبالغ بیمه</a>
     </div>
 
     <!-- Main Content -->

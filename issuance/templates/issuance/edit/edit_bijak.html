@@ -95,7 +95,7 @@
         <!-- دکمه‌های بالا -->
         <div class="text-center mb-4">
             <button type="submit" class="btn btn-success px-4">ذخیره تغییرات</button>
-            <a href="{% url 'preview' bijak.pk %}" class="btn btn-secondary px-4">بازگشت</a>
+            <a href="{% url 'issuance:crud:preview' bijak.pk %}" class="btn btn-secondary px-4">بازگشت</a>
         </div>
 
         <!-- کارت اصلی -->
@@ -119,7 +119,7 @@
                         <th>هزینه خدمات</th>
                     </tr>
                     <tr>
-                        <td>{{ bijak_form.issuance_date }}</td>
+                        <td>{{ bijak.issuance_datetime }}</td>
                         <td>{{ bijak_form.total_fare }}</td>
                         <td>{{ bijak_form.value }}</td>
                         <td>{{ cargo_form.origin }}</td>
@@ -245,7 +245,7 @@
                 <!-- دکمه‌های پایین -->
                 <div class="text-center mt-4">
                     <button type="submit" class="btn btn-success px-4">ذخیره تغییرات</button>
-                    <a href="{% url 'preview' bijak.pk %}" class="btn btn-secondary px-4">انصراف</a>
+                    <a href="{% url 'issuance:crud:preview' bijak.pk %}" class="btn btn-secondary px-4">انصراف</a>
                 </div>
             </div>
         </div>

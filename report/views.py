@@ -7,12 +7,13 @@ from issuance.models import Bijak
 
 
 def is_admin_or_manager(user):
-    return user.is_superuser or user.groups.filter(name__in=['مدیر', 'admin']).exists()
+    return user.is_superuser or user.groups.filter(name__in=['مدیر', 'مدیر کل سیستم']).exists()
 
 
 @user_passes_test(is_admin_or_manager)
 def report_dashboard(request):
     today = jdatetime.date.today()
+    print("today", today)
     bijaks = Bijak.objects.all()
 
     # -----------------------
@@ -36,43 +37,43 @@ def report_dashboard(request):
     if start_date_str:
         try:
             start_date = jdatetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
-            bijaks = bijaks.filter(issuance_date__gte=start_date)
+            bijaks = bijaks.filter(issuance_datetime__gte=start_date)
         except Exception as e:
             print("⚠️ خطای تاریخ شروع:", e)
 
     if end_date_str:
         try:
             end_date = jdatetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
-            bijaks = bijaks.filter(issuance_date__lte=end_date)
+            bijaks = bijaks.filter(issuance_datetime__lte=end_date)
         except Exception as e:
             print("⚠️ خطای تاریخ پایان:", e)
 
     # -----------------------
     # 🔹 آمارگیری
     # -----------------------
-    daily_count = bijaks.filter(issuance_date=today).count()
+    daily_count = bijaks.filter(issuance_datetime=today).count()
 
     week_start = today - jdatetime.timedelta(days=today.weekday())
     week_end = week_start + jdatetime.timedelta(days=7)
-    weekly_count = bijaks.filter(issuance_date__gte=week_start, issuance_date__lt=week_end).count()
+    weekly_count = bijaks.filter(issuance_datetime__gte=week_start, issuance_datetime__lt=week_end).count()
 
     month_start = jdatetime.date(today.year, today.month, 1)
     month_end = (jdatetime.date(today.year + 1, 1, 1)
                  if today.month == 12
                  else jdatetime.date(today.year, today.month + 1, 1))
-    monthly_count = bijaks.filter(issuance_date__gte=month_start, issuance_date__lt=month_end).count()
+    monthly_count = bijaks.filter(issuance_datetime__gte=month_start, issuance_datetime__lt=month_end).count()
 
     year_start = jdatetime.date(today.year, 1, 1)
     year_end = jdatetime.date(today.year + 1, 1, 1)
-    yearly_count = bijaks.filter(issuance_date__gte=year_start, issuance_date__lt=year_end).count()
+    yearly_count = bijaks.filter(issuance_datetime__gte=year_start, issuance_datetime__lt=year_end).count()
 
     # -----------------------
     # 🔹 داده برای نمودار
     # -----------------------
     chart_data = (
-        bijaks.values('issuance_date')
-            .annotate(count=Count('id'))
-            .order_by('issuance_date')
+        bijaks.values('issuance_datetime')
+            .annotate(count=Count('issuance_datetime'))
+            .order_by('issuance_datetime')
     )
 
     context = {
