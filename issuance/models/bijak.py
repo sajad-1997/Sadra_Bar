@@ -21,13 +21,13 @@ class Bijak(UserTrackingModel):
     # =========================
     tracking_code = models.CharField(max_length=15, unique=True)
     issuance_datetime = jmodels.jDateTimeField(verbose_name="تاریخ و ساعت صدور بارنامه")
-    value = models.CharField(max_length=100)
-    insurance = models.CharField(max_length=100)
-    loading_fee = models.CharField(max_length=100, blank=True, null=True)
-    unloading_fee = models.CharField(max_length=100, blank=True, null=True)
-    scale_fee = models.CharField(max_length=100, blank=True, null=True)
-    freight = models.CharField(max_length=100)
-    total_fare = models.CharField(max_length=100)
+    value = models.CharField(max_length=100, verbose_name="ارزش محموله")
+    insurance = models.CharField(max_length=100, verbose_name="مبلغ بیمه")
+    loading_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه بارگیری")
+    unloading_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه تخلیه")
+    scale_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه باسکول")
+    freight = models.CharField(max_length=100, verbose_name="کرایه پرداختی در مقصد")
+    total_fare = models.CharField(max_length=100, verbose_name="کل کرایه")
 
     sender = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='sender_bijaks')
     receiver = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='received_bijaks')
@@ -160,7 +160,7 @@ class Bijak(UserTrackingModel):
             self.tracking_code = self.generate_tracking_code()
 
         if not self.issuance_datetime:
-            self.issuance_datetime = timezone.now().date()
+            self.issuance_datetime = timezone.now()
 
         super().save(*args, **kwargs)
 

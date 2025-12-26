@@ -1,13 +1,15 @@
+import logging
 from datetime import datetime
 
 import jdatetime
 from django import forms
-from khayyam import JalaliDatetime
 
 from .models import Customer, Driver, Vehicle, Cargo, Caption, Bijak
-
+from .utils import persian_to_gregorian
 
 # from .mixins import PersianNumberFormMixin
+
+logger = logging.getLogger(__name__)
 
 
 # 🔹 تابع تبدیل اعداد فارسی به انگلیسی
@@ -22,23 +24,19 @@ def persian_to_english_numbers(value: str) -> str:
 
 # 🔹 کلاس پایه برای فرم‌ها (اعمال فقط روی فیلدهای مشخص عددی)
 class PersianNumberFormMixin:
-    numeric_fields = []  # لیست فیلدهایی که باید تبدیل شوند
+    """
+       تبدیل اعداد فارسی به انگلیسی در فیلدهای عددی
+       """
 
     def clean(self):
         cleaned_data = super().clean()
-        for field in self.numeric_fields:
+        numeric_fields = getattr(self, 'numeric_fields', [])
+        for field in numeric_fields:
             value = cleaned_data.get(field)
-            if isinstance(value, str):
+            if value and isinstance(value, str):
+                from .utils import persian_to_english_numbers
                 cleaned_data[field] = persian_to_english_numbers(value)
         return cleaned_data
-
-
-def persian_to_gregorian(jalali_str):
-    # فرض می‌کنیم ورودی کاربر: ۱۴۰۳/۰۶/۰۱
-    jalali_str = persian_to_english_numbers(jalali_str)  # تبدیل اعداد
-    year, month, day = map(int, jalali_str.split('/'))
-    g_date = jdatetime.date(year, month, day).togregorian()
-    return g_date
 
 
 class CustomerForm(PersianNumberFormMixin, forms.ModelForm):
@@ -76,23 +74,50 @@ class CustomerForm(PersianNumberFormMixin, forms.ModelForm):
 
 
 class DriverForm(PersianNumberFormMixin, forms.ModelForm):
-    numeric_fields = ['national_id', 'birth_date', 'certificate', 'certificate_date', 'phone', 'phone2', ]
+    numeric_fields = ['national_id', 'birth_date', 'certificate', 'certificate_date', 'phone', 'phone2']
 
-    # اضافه کردن فیلدهای تاریخ با placeholder و کلاس date-picker
     birth_date = forms.CharField(
-        required=False,
+        required=True,  # الزامی
+        error_messages={'required': 'تاریخ تولد نمی‌تواند خالی باشد.'},
         widget=forms.TextInput(attrs={
-            'class': 'date-picker form-control',
-            'placeholder': 'تاریخ تولد'
+            'class': 'form-control date-picker',
+            'placeholder': 'تاریخ تولد',
+            'autocomplete': 'off'
         })
     )
 
     certificate_date = forms.CharField(
-        required=False,
+        required=True,  # الزامی
+        error_messages={'required': 'تاریخ صدور گواهینامه نمی‌تواند خالی باشد.'},
         widget=forms.TextInput(attrs={
-            'class': 'date-picker form-control',
-            'placeholder': 'تاریخ صدور گواهینامه'
+            'class': 'form-control date-picker',
+            'placeholder': 'تاریخ صدور گواهینامه',
+            'autocomplete': 'off'
         })
+    )
+
+    name = forms.CharField(
+        required=True,
+        error_messages={'required': 'نام و نام خانوادگی الزامی است.'},
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'نام و نام خانوادگی'})
+    )
+
+    national_id = forms.CharField(
+        required=True,
+        error_messages={'required': 'کد ملی الزامی است.'},
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'کد ملی'})
+    )
+
+    certificate = forms.CharField(
+        required=True,
+        error_messages={'required': 'شماره گواهی نامه الزامی است.'},
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'شماره گواهی نامه'})
+    )
+
+    phone = forms.CharField(
+        required=True,
+        error_messages={'required': 'شماره تلفن الزامی است.'},
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'شماره تلفن'})
     )
 
     class Meta:
@@ -100,25 +125,37 @@ class DriverForm(PersianNumberFormMixin, forms.ModelForm):
         fields = '__all__'
         exclude = ['created_by', 'created_by_role', 'updated_by', 'updated_by_role']
 
-    def clean_birth_date(self):
-        data = self.cleaned_data['birth_date']
-        if isinstance(data, str) and data:
-            return persian_to_gregorian(data)  # تبدیل Jalali به میلادی
-        return data
-
-    def clean_certificate_date(self):
-        data = self.cleaned_data['certificate_date']
-        if isinstance(data, str) and data:
-            return persian_to_gregorian(data)
-        return data
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # افزودن کلاس numeric-field به فیلدهای عددی
-        for field_name in self.numeric_fields:
-            if field_name in self.fields:
-                self.fields[field_name].widget.attrs.update({'class': 'numeric-field'})
+        # اگر instance وجود دارد، تاریخ‌ها را به Jalali رشته‌ای تبدیل کن
+        instance = kwargs.get('instance')
+        if instance:
+            if instance.birth_date:
+                jalali_birth = jdatetime.date.fromgregorian(date=instance.birth_date)
+                self.fields['birth_date'].initial = f"{jalali_birth.year}/{jalali_birth.month:02}/{jalali_birth.day:02}"
+            if instance.certificate_date:
+                jalali_cert = jdatetime.date.fromgregorian(date=instance.certificate_date)
+                self.fields[
+                    'certificate_date'].initial = f"{jalali_cert.year}/{jalali_cert.month:02}/{jalali_cert.day:02}"
+
+    def clean_birth_date(self):
+        data = self.cleaned_data.get('birth_date')
+        if data:
+            g_date = persian_to_gregorian(data)
+            if g_date is None:
+                raise forms.ValidationError("تاریخ تولد نامعتبر است")
+            return g_date
+        return None
+
+    def clean_certificate_date(self):
+        data = self.cleaned_data.get('certificate_date')
+        if data:
+            g_date = persian_to_gregorian(data)
+            if g_date is None:
+                raise forms.ValidationError("تاریخ صدور گواهینامه نامعتبر است")
+            return g_date
+        return None
 
 
 class VehicleForm(PersianNumberFormMixin, forms.ModelForm):
@@ -196,13 +233,12 @@ class CaptionForm(forms.ModelForm):
 
 
 class ShipmentForm(forms.ModelForm):
-    # فیلدهای date/time جداگانه برای انتخاب کاربر
     issuance_date = forms.CharField(
         label="تاریخ صدور بارنامه",
         required=True,
         widget=forms.TextInput(attrs={
             'class': 'date-picker form-control',
-            'placeholder': '۱۴۰۳/۰۱/۲۰'
+            'placeholder': 'YYYY/MM/DD'
         })
     )
 
@@ -211,50 +247,62 @@ class ShipmentForm(forms.ModelForm):
         required=True,
         widget=forms.TextInput(attrs={
             'class': 'time-picker form-control',
-            'placeholder': '۱۵:۳۰:۰۰'
+            'placeholder': 'HH:MM'
         })
     )
 
     class Meta:
         model = Bijak
-        fields = ('total_fare', 'value', 'insurance',
-                  'loading_fee', 'unloading_fee', 'scale_fee', 'freight')
-        exclude = ('tracking_code', 'issuance_date', 'issuance_time', )
+        fields = (
+            'total_fare', 'value', 'insurance',
+            'loading_fee', 'unloading_fee',
+            'scale_fee', 'freight',
+        )
 
     def clean(self):
         cleaned_data = super().clean()
 
-        date_str = persian_to_english_numbers(cleaned_data.get('issuance_date'))
-        time_str = persian_to_english_numbers(cleaned_data.get('issuance_time'))
+        raw_date = cleaned_data.get('issuance_date')
+        raw_time = cleaned_data.get('issuance_time')
+
+        if not raw_date or not raw_time:
+            raise forms.ValidationError("تاریخ و ساعت صدور الزامی است.")
+
+        date_str = persian_to_english_numbers(raw_date).strip()
+        time_str = persian_to_english_numbers(raw_time).strip()
 
         try:
-            j_date = JalaliDatetime.strptime(date_str, "%Y/%m/%d")
-            j_time = JalaliDatetime.strptime(time_str, "%H:%M:%S")
+            # --- تاریخ شمسی ---
+            j_date = jdatetime.date.fromisoformat(
+                date_str.replace('/', '-')
+            )
 
-            issuance_datetime = JalaliDatetime(
-                j_date.year,
-                j_date.month,
-                j_date.day,
-                j_time.hour,
-                j_time.minute,
-                j_time.second
-            ).todatetime()
+            # --- ساعت ---
+            time_parts = time_str.split(':')
+            if len(time_parts) not in (2, 3):
+                raise ValueError("Invalid time format")
+
+            hour = int(time_parts[0])
+            minute = int(time_parts[1])
+            second = int(time_parts[2]) if len(time_parts) == 3 else 0
+
+            issuance_time_obj = time(hour, minute, second)
+
+            # --- تبدیل به datetime میلادی ---
+            issuance_datetime = datetime.combine(
+                j_date.togregorian(),
+                issuance_time_obj
+            )
 
             cleaned_data['issuance_datetime'] = issuance_datetime
 
-        except Exception:
+        except Exception as e:
+            logger.exception(
+                "Invalid issuance date/time | date=%s time=%s",
+                date_str, time_str
+            )
             raise forms.ValidationError(
                 "تاریخ یا ساعت وارد شده معتبر نیست."
             )
 
         return cleaned_data
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        #
-        # # مقداردهی اولیه تاریخ و ساعت برای ویرایش
-        # if self.instance and self.instance.pk and self.instance.issuance_datetime:
-        #     self.fields['issuance_date_input'].initial = jdatetime.date.fromgregorian(
-        #         date=self.instance.issuance_datetime
-        #     ).strftime('%Y/%m/%d')
-        #     self.fields['issuance_time_input'].initial = self.instance.issuance_time.strftime('%H:%M')

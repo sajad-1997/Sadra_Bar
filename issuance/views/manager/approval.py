@@ -7,9 +7,8 @@ from django.utils import timezone
 from issuance.models import Bijak, BijakApprovalLog
 
 
-def is_manager(user):
-    """فقط مدیر یا ادمین اجازه دارد"""
-    return user.is_superuser or user.is_staff
+def is_admin_or_manager(user):
+    return user.is_superuser or user.role in ['admin', 'manager']
 
 
 @login_required
@@ -25,7 +24,7 @@ def send_for_approval(request, bijak_id):
 
 
 @login_required
-@user_passes_test(is_manager)
+@user_passes_test(is_admin_or_manager)
 def approve_bijak(request, bijak_id):
     bijak = get_object_or_404(Bijak, id=bijak_id)
 
@@ -50,7 +49,7 @@ def approve_bijak(request, bijak_id):
 
 
 @login_required
-@user_passes_test(is_manager)
+@user_passes_test(is_admin_or_manager)
 def reject_bijak(request, bijak_id):
     bijak = get_object_or_404(Bijak, id=bijak_id)
     reason = request.POST.get("reason", "").strip()

@@ -53,3 +53,9 @@ def get_vehicle_by_driver(request):
     }
 
     return JsonResponse({"success": True, "vehicle": data})
+
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
+def edit_vehicle(request):
+    return render(request, 'issuance/edit/edit_vehicle.html')

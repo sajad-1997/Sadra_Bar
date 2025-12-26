@@ -5,8 +5,8 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import never_cache
 
-from ..forms import CustomerForm
 from issuance.models import Customer
+from ..forms import CustomerForm
 
 
 @login_required
@@ -44,3 +44,9 @@ def duplicate_customer(request):
             return JsonResponse({"success": False, "error": str(e)})
 
     return JsonResponse({"success": False, "error": "درخواست نامعتبر"})
+
+
+@login_required(login_url='/accounts/login/')
+@never_cache  # جلوگیری از نمایش از کش
+def edit_customer(request):
+    return render(request, 'issuance/edit/edit_customer.html')

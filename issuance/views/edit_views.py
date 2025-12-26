@@ -12,24 +12,6 @@ from ..forms import *
 
 @login_required(login_url='/accounts/login/')
 @never_cache  # جلوگیری از نمایش از کش
-def edit_customer(request):
-    return render(request, 'issuance/edit/edit_customer.html')
-
-
-@login_required(login_url='/accounts/login/')
-@never_cache  # جلوگیری از نمایش از کش
-def edit_driver(request):
-    return render(request, 'issuance/edit/edit_driver.html')
-
-
-@login_required(login_url='/accounts/login/')
-@never_cache  # جلوگیری از نمایش از کش
-def edit_vehicle(request):
-    return render(request, 'issuance/edit/edit_vehicle.html')
-
-
-@login_required(login_url='/accounts/login/')
-@never_cache  # جلوگیری از نمایش از کش
 def edit_cargo(request):
     return render(request, 'issuance/edit/edit_cargo.html')
 

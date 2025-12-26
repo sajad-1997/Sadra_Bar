@@ -10,7 +10,7 @@ def admin_dashboard(request):
     return render(request, 'dashboard/admin_dashboard.html', {'user': request.user})
 
 
-@role_required(['manager', 'admin'])
+@role_required(['manager'])
 def manager_dashboard(request):
     permissions = None
     if request.user.role == 'manager':

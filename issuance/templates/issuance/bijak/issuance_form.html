@@ -74,10 +74,18 @@
                             <div id="driver-results" class="list-group"></div>
                         </div>
                         <div class="col-md-1 text-center">
-                            <a href="{% url 'issuance:crud:add_driver' %}" class="btn btn-secondary btn-lg">
+                            <!-- دکمه افزودن راننده -->
+                            <a href="{% url 'issuance:crud:add_driver' %}" class="btn btn-secondary btn-lg" style="margin-top:5px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                      class="bi bi-plus" viewBox="0 0 16 16">
                                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                </svg>
+                            </a>
+                            <!-- دکمه ویرایش راننده -->
+                            <a href="#" id="edit-driver-btn" class="btn btn-primary btn-lg" style="margin-top:5px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-pencil" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-9.793 9.793-3.5.5a.5.5 0 0 1-.571-.571l.5-3.5L12.146.146zM11.207 2L3 10.207V12h1.793L14 3.793 11.207 2z"/>
                                 </svg>
                             </a>
                         </div>
@@ -106,7 +114,7 @@
                             </div>
                         </div>
                         <div class="col-md-1 text-center">
-                            <a href="{% url 'issuance:crud:add_vehicle' %}" class="btn btn-secondary btn-lg">
+                            <a href="{% url 'issuance:crud:add_vehicle' %}" class="btn btn-secondary btn-lg" style="margin-top:5px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                      class="bi bi-plus" viewBox="0 0 16 16">
                                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
@@ -217,11 +225,78 @@
     </form>
 
     <!-- اسکریپت‌ها -->
+    <!-- jQuery (الزامی) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="{% static 'issuance/persian-date.js' %}"></script>
-    <script src="{% static 'issuance/persian-datepicker.js' %}"></script>
-    <script src="{% static 'issuance/datetime-init.js' %}"></script>
+
+    <!-- Persian Date (هسته محاسبات شمسی) -->
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+
+    <!-- Persian Datepicker -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <script src="{% static 'issuance/shipment_form.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+
+            /* ===== انتخاب تاریخ شمسی ===== */
+            $('.date-picker').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false,
+                initialValueType: 'persian',
+                observer: true,
+                calendar: {
+                    persian: {
+                        locale: 'fa',
+                        leapYearMode: 'algorithmic'
+                    }
+                },
+                toolbox: {
+                    todayButton: {
+                        enabled: true,
+                        text: {fa: 'امروز'}
+                    }
+                },
+                timePicker: {
+                    enabled: false
+                }
+            });
+
+            /* ===== انتخاب ساعت (HH:MM:SS با اعداد فارسی) ===== */
+            $('.time-picker').persianDatepicker({
+                format: 'HH:mm:ss',
+                autoClose: true,
+                initialValue: false,
+                onlyTimePicker: true,
+                timePicker: {
+                    enabled: true,
+                    second: {
+                        enabled: true
+                    },
+                    meridiem: {
+                        enabled: false
+                    }
+                }
+            });
+
+        });
+    </script>
+    <script>
+        const editBtn = document.getElementById('edit-driver-btn');
+        const driverIdInput = document.getElementById('driver-id'); // input hidden که ID راننده را نگه می‌دارد
+
+        editBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const driverId = driverIdInput.value;
+            if (driverId) {
+                // هدایت به ویو ویرایش راننده با driverId
+                window.location.href = "{% url 'issuance:crud:edit_driver' 0 %}".replace('0', driverId);
+            } else {
+                alert('لطفاً ابتدا یک راننده انتخاب کنید.');
+            }
+        });
+    </script>
     <script>
         const urls = {
             searchCustomer: "{% url 'issuance:search:search_customer' %}",

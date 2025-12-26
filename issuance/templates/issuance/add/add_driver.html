@@ -66,8 +66,8 @@
     <br>
     <br>
     <br>
-    <br>
-    <br>
+
+
     <div class="mb-3">
         <label>کد ملی:</label>
         <input type="text" id="driver-national-id" name="national_id" class="form-control">
@@ -140,17 +140,64 @@
 <p id="msg"></p>
 
 
-<!-- 1) jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- اسکریپت‌ها -->
+    <!-- jQuery (الزامی) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-<!-- 2) PersianDate -->
-<script src="{% static 'issuance/persian-date.js' %}"></script>
+    <!-- Persian Date (هسته محاسبات شمسی) -->
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
 
-<!-- 3) Persian Datepicker -->
-<script src="{% static 'issuance/persian-datepicker.js' %}"></script>
+    <!-- Persian Datepicker -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+        <script>
+        $(document).ready(function () {
 
-<!-- 4) init script -->
-<script src="{% static 'issuance/datetime-init.js' %}"></script>
+            /* ===== انتخاب تاریخ شمسی ===== */
+            $('.date-picker').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false,
+                initialValueType: 'persian',
+                observer: true,
+                calendar: {
+                    persian: {
+                        locale: 'fa',
+                        leapYearMode: 'algorithmic'
+                    }
+                },
+                toolbox: {
+                    todayButton: {
+                        enabled: true,
+                        text: {fa: 'امروز'}
+                    }
+                },
+                timePicker: {
+                    enabled: false
+                }
+            });
+
+            /* ===== انتخاب ساعت (HH:MM:SS با اعداد فارسی) ===== */
+            $('.time-picker').persianDatepicker({
+                format: 'HH:mm:ss',
+                autoClose: true,
+                initialValue: false,
+                onlyTimePicker: true,
+                timePicker: {
+                    enabled: true,
+                    second: {
+                        enabled: true
+                    },
+                    meridiem: {
+                        enabled: false
+                    }
+                }
+            });
+
+        });
+    </script>
+
 <script>
     $(document).ready(function () {
         let selectedIndex = -1;

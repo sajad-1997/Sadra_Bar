@@ -6,8 +6,8 @@ from .bijak import Bijak
 
 class BijakApprovalLog(models.Model):
     ACTION_CHOICES = [
-        ('approved', 'تأیید'),
-        ('rejected', 'رد'),
+        ('approved', 'تأیید شده'),
+        ('rejected', 'رد شده'),
     ]
 
     bijak = models.ForeignKey(
