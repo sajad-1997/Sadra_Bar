@@ -31,10 +31,18 @@
                             <div id="sender-results" class="list-group"></div>
                         </div>
                         <div class="col-md-1 text-center">
+                            <!-- دکمه افزودن مشتری -->
                             <a href="{% url 'issuance:crud:add_customer' %}" class="btn btn-secondary btn-lg">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                      class="bi bi-plus" viewBox="0 0 16 16">
                                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                </svg>
+                            </a>
+                            <!-- دکمه ویرایش مشتری -->
+                            <a href="#" id="edit-sender-btn" class="btn btn-primary btn-lg" style="margin-top:5px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-pencil" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-9.793 9.793-3.5.5a.5.5 0 0 1-.571-.571l.5-3.5L12.146.146zM11.207 2L3 10.207V12h1.793L14 3.793 11.207 2z"/>
                                 </svg>
                             </a>
                         </div>
@@ -50,12 +58,21 @@
                             <div id="receiver-results" class="list-group"></div>
                         </div>
                         <div class="col-md-1 text-center">
+                            <!-- دکمه افزودن مشتری -->
                             <a href="{% url 'issuance:crud:add_customer' %}" class="btn btn-secondary btn-lg">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                      class="bi bi-plus" viewBox="0 0 16 16">
                                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
                                 </svg>
                             </a>
+                            <!-- دکمه ویرایش مشتری -->
+                            <a href="#" id="edit-receiver-btn" class="btn btn-primary btn-lg" style="margin-top:5px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-pencil" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-9.793 9.793-3.5.5a.5.5 0 0 1-.571-.571l.5-3.5L12.146.146zM11.207 2L3 10.207V12h1.793L14 3.793 11.207 2z"/>
+                                </svg>
+                            </a>
+
                         </div>
                     </div>
                 </div>
@@ -75,7 +92,8 @@
                         </div>
                         <div class="col-md-1 text-center">
                             <!-- دکمه افزودن راننده -->
-                            <a href="{% url 'issuance:crud:add_driver' %}" class="btn btn-secondary btn-lg" style="margin-top:5px;">
+                            <a href="{% url 'issuance:crud:add_driver' %}" class="btn btn-secondary btn-lg"
+                               style="margin-top:5px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                      class="bi bi-plus" viewBox="0 0 16 16">
                                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
@@ -114,7 +132,8 @@
                             </div>
                         </div>
                         <div class="col-md-1 text-center">
-                            <a href="{% url 'issuance:crud:add_vehicle' %}" class="btn btn-secondary btn-lg" style="margin-top:5px;">
+                            <a href="{% url 'issuance:crud:add_vehicle' %}" class="btn btn-secondary btn-lg"
+                               style="margin-top:5px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                      class="bi bi-plus" viewBox="0 0 16 16">
                                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
@@ -294,6 +313,21 @@
                 window.location.href = "{% url 'issuance:crud:edit_driver' 0 %}".replace('0', driverId);
             } else {
                 alert('لطفاً ابتدا یک راننده انتخاب کنید.');
+            }
+        });
+    </script>
+    <script>
+        const editSenderBtn = document.getElementById('edit-sender-btn');
+        const senderIdInput = document.getElementById('sender-id');
+
+        editSenderBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const senderId = senderIdInput.value;
+
+            if (senderId) {
+                window.location.href = "{% url 'issuance:crud:edit_customer' 0 %}".replace('0', senderId);
+            } else {
+                alert('لطفاً ابتدا فرستنده را انتخاب کنید.');
             }
         });
     </script>

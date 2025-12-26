@@ -1,8 +1,10 @@
 # 4️⃣ customer_views.py
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
 from issuance.models import Customer
@@ -46,7 +48,37 @@ def duplicate_customer(request):
     return JsonResponse({"success": False, "error": "درخواست نامعتبر"})
 
 
-@login_required(login_url='/accounts/login/')
-@never_cache  # جلوگیری از نمایش از کش
-def edit_customer(request):
-    return render(request, 'issuance/edit/edit_customer.html')
+@login_required
+@never_cache
+def edit_customer(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    form = CustomerForm(request.POST or None, instance=customer)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            instance = form.save(commit=False)
+            now = timezone.now()
+
+            # مدیریت تاریخ ایجاد و بروزرسانی
+            if not getattr(instance, 'created_at', None):
+                instance.created_at = now
+            instance.updated_at = now
+
+            if not getattr(instance, 'created_by', None):
+                instance.created_by = request.user
+            instance.updated_by = request.user
+
+            instance.save()
+            messages.success(request, "اطلاعات مشتری با موفقیت ذخیره شد.")
+            return redirect('issuance:crud:create_new')
+        else:
+            # نمایش پیام خطا برای هر فیلد
+            for field, errors in form.errors.items():
+                for error in errors:
+                    label = getattr(form.fields[field], 'label', field)
+                    messages.error(request, f"{label}: {error}")
+
+    return render(request, 'issuance/edit/edit_customer.html', {
+        'form': form,
+        'customer': customer,
+    })
