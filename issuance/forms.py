@@ -96,6 +96,14 @@ class DriverForm(PersianNumberFormMixin, forms.ModelForm):
         })
     )
 
+    insurance_policy_expiry = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control date-picker',
+            'placeholder': 'تاریخ انقضاء بیمه نامه',
+            'autocomplete': 'off'
+        })
+    )
+
     name = forms.CharField(
         required=True,
         error_messages={'required': 'نام و نام خانوادگی الزامی است.'},

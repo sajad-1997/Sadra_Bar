@@ -26,8 +26,8 @@ class Bijak(UserTrackingModel):
     loading_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه بارگیری")
     unloading_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه تخلیه")
     scale_fee = models.CharField(max_length=100, blank=True, null=True, verbose_name="هزینه باسکول")
-    freight = models.CharField(max_length=100, verbose_name="کرایه پرداختی در مقصد")
-    total_fare = models.CharField(max_length=100, verbose_name="کل کرایه")
+    freight = models.CharField(max_length=100, verbose_name="کل کرایه")
+    total_fare = models.CharField(max_length=100, verbose_name="کرایه پرداختی در مقصد")
 
     sender = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='sender_bijaks')
     receiver = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='received_bijaks')

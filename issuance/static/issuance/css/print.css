@@ -4,7 +4,7 @@
 @font-face {
     font-family: 'IRANSans';
     src: url('/static/fonts/IRANSansWeb.woff2') format('woff2'),
-         url('/static/fonts/IRANSansWeb.woff') format('woff');
+    url('/static/fonts/IRANSansWeb.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
@@ -12,7 +12,7 @@
 @font-face {
     font-family: 'IRANSans';
     src: url('/static/fonts/IRANSansWeb_Bold.woff2') format('woff2'),
-         url('/static/fonts/IRANSansWeb_Bold.woff') format('woff');
+    url('/static/fonts/IRANSansWeb_Bold.woff') format('woff');
     font-weight: bold;
     font-style: normal;
 }
@@ -109,7 +109,7 @@ body {
 .form-table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 2px 1px;
+    border-spacing: 4px 1px;
 }
 
 .form-table-cargo {
@@ -126,10 +126,10 @@ body {
 
 .table-header {
     background-color: #f0f0f0;
-    padding: 4px;
+    padding: 2px 4px;
     font-size: 11px;
     font-weight: bold;
-    border-bottom: 1px dashed;
+    border-bottom: 1px solid;
 }
 
 .table-header-cargo {
@@ -142,7 +142,7 @@ body {
 .table-cell {
     background: transparent;
     font-size: 12px;
-    padding-right: 4px;
+    padding: 2px 4px;
 }
 
 .table-cell-cargo {
@@ -284,6 +284,23 @@ body {
         font-family: 'IRANSans', sans-serif !important;
     }
 
+    .section th {
+        font-size: 10px !important;
+        font-family: 'IRANSans', sans-serif !important;
+    }
+
+    .section td {
+        font-size: 12px !important;
+        font-weight: bold;
+        font-family: "IRANSans", sans-serif !important;
+    }
+
+    .section span {
+        font-size: 12px !important;
+        font-weight: bold;
+        font-family: "IRANSans", sans-serif !important;
+    }
+
     .no-print {
         display: none !important;
     }
@@ -295,6 +312,14 @@ body {
         border: none !important;
         border-radius: 0;
         box-shadow: none;
+    }
+
+    .table-cell {
+        background-color: #a8a8a8 !important;
+    }
+
+    .form-field {
+        margin-right: 10px !important;
     }
 
     @page {
